@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Talk Order Generator</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #FFF8DC; min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center;
+      padding: 20px 16px 40px;
+    }
+    h1 { font-size: 1.6rem; color: #c0392b; margin-bottom: 4px; text-align: center; letter-spacing: 1px; }
+    .subtitle { font-size: 0.85rem; color: #888; text-align: center; margin-bottom: 20px; }
+    .elmo-wrapper { display: flex; flex-direction: column; align-items: center; margin-bottom: 16px; }
+    .speech-bubble {
+      background: #fff; border: 3px solid #e74c3c; border-radius: 20px;
+      padding: 12px 18px; max-width: 280px; font-size: 0.95rem; color: #333;
+      text-align: center; position: relative; margin-bottom: 10px; line-height: 1.4;
+      min-height: 52px; transition: opacity 0.15s ease;
+    }
+    .speech-bubble::after {
+      content: ""; position: absolute; bottom: -16px; left: 50%;
+      transform: translateX(-50%); border: 8px solid transparent; border-top-color: #e74c3c;
+    }
+    .speech-bubble::before {
+      content: ""; position: absolute; bottom: -10px; left: 50%;
+      transform: translateX(-50%); border: 7px solid transparent; border-top-color: #fff; z-index: 1;
+    }
+    .elmo-svg { width: 120px; height: 140px; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15)); }
+    .elmo-svg.bounce { animation: bounce 0.6s ease; }
+    .elmo-svg.celebrate { animation: celebrate 0.8s ease infinite; }
+    @keyframes bounce {
+      0%   { transform: translateY(0); }
+      30%  { transform: translateY(-18px) rotate(-5deg); }
+      60%  { transform: translateY(-8px) rotate(5deg); }
+      100% { transform: translateY(0) rotate(0deg); }
+    }
+    @keyframes celebrate {
+      0%   { transform: translateY(0) rotate(-8deg); }
+      50%  { transform: translateY(-14px) rotate(8deg); }
+      100% { transform: translateY(0) rotate(-8deg); }
+    }
+    .card {
+      background: #fff; border-radius: 20px;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+      padding: 24px 20px; width: 100%; max-width: 420px;
+    }
+    .card-title { font-size: 1rem; font-weight: 700; color: #c0392b; margin-bottom: 14px; text-align: center; }
+    .members-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .member-btn {
+      display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+      border-radius: 14px; border: 2.5px solid #ddd; background: #f9f9f9;
+      cursor: pointer; font-size: 0.95rem; font-weight: 500; color: #555;
+      transition: all 0.2s; user-select: none; -webkit-tap-highlight-color: transparent; width: 100%;
+    }
+    .member-btn.selected { border-color: #e74c3c; background: #fdecea; color: #c0392b; }
+    .avatar {
+      width: 32px; height: 32px; border-radius: 50%; background: #ddd;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700; color: #fff; flex-shrink: 0; transition: background 0.2s;
+    }
+    .member-btn.selected .avatar { background: #e74c3c; }
+    .checkmark { margin-left: auto; opacity: 0; color: #e74c3c; font-size: 1rem; transition: opacity 0.2s; }
+    .member-btn.selected .checkmark { opacity: 1; }
+    .btn-row { display: flex; gap: 10px; margin-bottom: 8px; }
+    .btn {
+      flex: 1; padding: 13px 10px; border-radius: 14px; border: none;
+      font-size: 0.95rem; font-weight: 700; cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn:active { transform: scale(0.96); }
+    .btn-primary { background: #e74c3c; color: #fff; box-shadow: 0 4px 12px rgba(231,76,60,0.35); }
+    .btn-primary:hover { box-shadow: 0 6px 16px rgba(231,76,60,0.45); }
+    .btn-secondary { background: #f0f0f0; color: #666; }
+    .btn-secondary:hover { background: #e8e8e8; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+    .results-section { display: none; margin-top: 20px; }
+    .results-section.visible { display: block; }
+    .result-divider { border: none; border-top: 2px dashed #f5c6c2; margin: 16px 0; }
+    .result-title { font-size: 0.9rem; font-weight: 700; color: #c0392b; text-align: center; margin-bottom: 12px; }
+    .order-list { list-style: none; }
+    .order-item {
+      display: flex; align-items: center; gap: 12px; padding: 10px 14px;
+      border-radius: 12px; margin-bottom: 8px; background: #fdecea;
+      border-left: 4px solid #e74c3c; font-size: 0.97rem; font-weight: 600; color: #333;
+      opacity: 0; transform: translateX(-20px); animation: slideIn 0.4s ease forwards;
+    }
+    @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+    .order-num {
+      width: 28px; height: 28px; border-radius: 50%; background: #e74c3c;
+      color: #fff; font-size: 0.8rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .confetti-emoji { font-size: 1.2rem; margin-left: auto; }
+    .select-row { display: flex; gap: 8px; margin-bottom: 14px; align-items: center; }
+    .btn-tiny {
+      padding: 6px 12px; border-radius: 10px; border: none; font-size: 0.8rem;
+      font-weight: 600; cursor: pointer; background: #f0f0f0; color: #666; transition: background 0.15s;
+    }
+    .btn-tiny:hover { background: #e0e0e0; }
+    .counter-label { margin-left: auto; font-size: 0.8rem; color: #999; }
+    footer { margin-top: 24px; font-size: 0.75rem; color: #bbb; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <h1>&#127897; Talk Order Generator</h1>
+  <p class="subtitle">Guided by Elmo from Sesame Street</p>
+
+  <div class="elmo-wrapper">
+    <div class="speech-bubble" id="speechBubble">
+      Hi there! Elmo is SO happy to see you! Who is here today? Pick your friends! &#127881;
+    </div>
+
+    <svg class="elmo-svg" id="elmoSvg" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+      <!-- Body -->
+      <ellipse cx="60" cy="105" rx="30" ry="28" fill="#e74c3c"/>
+      <!-- Arms -->
+      <path d="M32,95 Q15,90 12,110 Q18,115 28,108" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
+      <path d="M88,95 Q105,90 108,110 Q102,115 92,108" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
+      <!-- Hands -->
+      <circle cx="12" cy="112" r="7" fill="#e74c3c"/>
+      <circle cx="6" cy="108" r="4" fill="#e74c3c"/>
+      <circle cx="5" cy="116" r="4" fill="#e74c3c"/>
+      <circle cx="108" cy="112" r="7" fill="#e74c3c"/>
+      <circle cx="114" cy="108" r="4" fill="#e74c3c"/>
+      <circle cx="115" cy="116" r="4" fill="#e74c3c"/>
+      <!-- Legs -->
+      <ellipse cx="48" cy="130" rx="10" ry="8" fill="#e74c3c"/>
+      <ellipse cx="72" cy="130" rx="10" ry="8" fill="#e74c3c"/>
+      <!-- Feet -->
+      <ellipse cx="46" cy="136" rx="13" ry="6" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+      <ellipse cx="74" cy="136" rx="13" ry="6" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+      <!-- Head -->
+      <circle cx="60" cy="55" r="36" fill="#e74c3c"/>
+      <!-- Fur bumps -->
+      <circle cx="30" cy="42" r="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+      <circle cx="38" cy="28" r="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+      <circle cx="52" cy="22" r="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+      <circle cx="68" cy="22" r="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+      <circle cx="82" cy="28" r="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+      <circle cx="90" cy="42" r="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
+      <!-- Eyes -->
+      <ellipse cx="48" cy="52" rx="13" ry="13" fill="white"/>
+      <ellipse cx="73" cy="52" rx="13" ry="13" fill="white"/>
+      <circle cx="50" cy="52" r="7" fill="#1a1a1a" id="leftPupil"/>
+      <circle cx="75" cy="52" r="7" fill="#1a1a1a" id="rightPupil"/>
+      <circle cx="53" cy="49" r="2.5" fill="white"/>
+      <circle cx="78" cy="49" r="2.5" fill="white"/>
+      <!-- Nose -->
+      <ellipse cx="60" cy="66" rx="9" ry="7" fill="#f39c12"/>
+      <ellipse cx="60" cy="66" rx="7" ry="5" fill="#e67e22"/>
+      <circle cx="57" cy="67" r="2" fill="#c0392b"/>
+      <circle cx="63" cy="67" r="2" fill="#c0392b"/>
+      <!-- Mouth -->
+      <path d="M46,76 Q60,88 74,76" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M50,79 Q60,87 70,79 Q60,85 50,79" fill="white"/>
+      <!-- Eyebrows -->
+      <path d="M38,42 Q48,37 56,41" stroke="#c0392b" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M64,41 Q72,37 83,42" stroke="#c0392b" stroke-width="3" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Who is in the meeting? &#128075;</div>
+    <div class="select-row">
+      <button class="btn-tiny" onclick="selectAll()">Select all</button>
+      <button class="btn-tiny" onclick="deselectAll()">Clear</button>
+      <span class="counter-label" id="counterLabel">0 selected</span>
+    </div>
+    <div class="members-grid" id="membersGrid"></div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="generateBtn" onclick="generateOrder()" disabled>
+        &#127922; Generate Order!
+      </button>
+      <button class="btn btn-secondary" onclick="resetAll()">Reset</button>
+    </div>
+    <div class="results-section" id="resultsSection">
+      <hr class="result-divider"/>
+      <div class="result-title">&#127897; Today's Talk Order</div>
+      <ol class="order-list" id="orderList"></ol>
+    </div>
+  </div>
+
+  <footer>Made with &#10084; for the ADC Consulting team</footer>
+
+  <script>
+    var MEMBERS = ["Alinda","Elianne","Lisette","Harm","Jochem","Laurent","Timon"];
+    var EMOJIS  = ["&#127881;","&#127775;","&#128293;","&#127880;","&#129395;","&#128079;","&#128640;","&#10024;","&#128170;","&#127882;"];
+    var selected = {};
+    var generated = false;
+
+    var MSG_NONE      = "Hi there! Elmo is SO happy to see you! Who is here today? Pick your friends! &#127881;";
+    var MSG_SELECTING = "Oh, Elmo LOVES __NAME__! Who else is here? Keep picking! &#128076;";
+    var MSG_READY     = "Yaaaay! __COUNT__ friends are here! Are you ready? Hit that button! Elmo cannot wait! &#129345;";
+    var MSG_RESULT    = "Wooohooo! Elmo did it! Here is the order! Have a GREAT meeting, everybody! &#127882;";
+    var MSG_SOLO      = "Hehe, it is just __NAME__? Okay, __NAME__ goes first! Obviously! &#128516;";
+    var MSG_RESET     = "Okay okay! Let us start over. Elmo is ready! Who is here today? &#127775;";
+
+    function buildGrid() {
+      var grid = document.getElementById("membersGrid");
+      grid.innerHTML = "";
+      MEMBERS.forEach(function(name) {
+        var btn = document.createElement("button");
+        btn.className = "member-btn" + (selected[name] ? " selected" : "");
+        btn.id = "btn-" + name;
+        btn.setAttribute("aria-pressed", selected[name] ? "true" : "false");
+        btn.onclick = (function(n){ return function(){ toggleMember(n); }; })(name);
+        var av = document.createElement("div");
+        av.className = "avatar";
+        av.textContent = name.slice(0,2).toUpperCase();
+        var ns = document.createElement("span");
+        ns.textContent = name;
+        var cs = document.createElement("span");
+        cs.className = "checkmark";
+        cs.textContent = "✓";
+        btn.appendChild(av);
+        btn.appendChild(ns);
+        btn.appendChild(cs);
+        grid.appendChild(btn);
+      });
+    }
+
+    function toggleMember(name) {
+      if (selected[name]) {
+        delete selected[name];
+      } else {
+        selected[name] = true;
+        if (!generated) {
+          say(MSG_SELECTING.split("__NAME__").join(name));
+          bounceElmo();
+        }
+      }
+      updateUI();
+    }
+
+    function selectAll() {
+      MEMBERS.forEach(function(m){ selected[m] = true; });
+      updateUI();
+      say(MSG_READY.split("__COUNT__").join(MEMBERS.length));
+      bounceElmo();
+    }
+
+    function deselectAll() {
+      selected = {}; generated = false;
+      hideResults(); updateUI();
+      say(MSG_NONE);
+    }
+
+    function countSelected() { return Object.keys(selected).length; }
+
+    function updateUI() {
+      MEMBERS.forEach(function(name) {
+        var btn = document.getElementById("btn-" + name);
+        if (!btn) return;
+        btn.className = "member-btn" + (selected[name] ? " selected" : "");
+        btn.setAttribute("aria-pressed", selected[name] ? "true" : "false");
+      });
+      var count = countSelected();
+      document.getElementById("counterLabel").textContent = count + " selected";
+      document.getElementById("generateBtn").disabled = (count === 0);
+      if (count >= 2 && !generated) {
+        say(MSG_READY.split("__COUNT__").join(count));
+      } else if (count === 0 && !generated) {
+        say(MSG_NONE);
+      }
+    }
+
+    function generateOrder() {
+      if (countSelected() === 0) return;
+      generated = true;
+      var people = Object.keys(selected);
+      // Fisher-Yates shuffle
+      for (var i = people.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = people[i]; people[i] = people[j]; people[j] = tmp;
+      }
+      var list = document.getElementById("orderList");
+      list.innerHTML = "";
+      people.forEach(function(name, i) {
+        var li = document.createElement("li");
+        li.className = "order-item";
+        li.style.animationDelay = (i * 0.1) + "s";
+        var nd = document.createElement("div");
+        nd.className = "order-num";
+        nd.textContent = (i + 1).toString();
+        var ns = document.createElement("span");
+        ns.textContent = name;
+        var es = document.createElement("span");
+        es.className = "confetti-emoji";
+        es.innerHTML = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+        li.appendChild(nd); li.appendChild(ns); li.appendChild(es);
+        list.appendChild(li);
+      });
+      document.getElementById("resultsSection").classList.add("visible");
+      if (people.length === 1) {
+        say(MSG_SOLO.split("__NAME__").join(people[0]));
+      } else {
+        say(MSG_RESULT);
+      }
+      celebrateElmo();
+      setTimeout(function(){ stopCelebrate(); }, 3000);
+    }
+
+    function resetAll() {
+      selected = {}; generated = false;
+      buildGrid(); hideResults(); updateUI();
+      say(MSG_RESET); bounceElmo();
+    }
+
+    function hideResults() {
+      document.getElementById("resultsSection").classList.remove("visible");
+      document.getElementById("orderList").innerHTML = "";
+    }
+
+    function say(msg) {
+      var b = document.getElementById("speechBubble");
+      b.style.opacity = "0";
+      setTimeout(function(){ b.innerHTML = msg; b.style.opacity = "1"; }, 150);
+    }
+
+    function bounceElmo() {
+      var el = document.getElementById("elmoSvg");
+      el.classList.remove("bounce","celebrate");
+      void el.offsetWidth;
+      el.classList.add("bounce");
+      el.addEventListener("animationend", function(){ el.classList.remove("bounce"); }, { once: true });
+    }
+
+    function celebrateElmo() {
+      var el = document.getElementById("elmoSvg");
+      el.classList.remove("bounce");
+      el.classList.add("celebrate");
+    }
+
+    function stopCelebrate() {
+      document.getElementById("elmoSvg").classList.remove("celebrate");
+    }
+
+    // Blinking eyes
+    setInterval(function() {
+      var lp = document.getElementById("leftPupil");
+      var rp = document.getElementById("rightPupil");
+      if (!lp || !rp) return;
+      lp.setAttribute("ry","1"); rp.setAttribute("ry","1");
+      lp.setAttribute("rx","7"); rp.setAttribute("rx","7");
+      setTimeout(function(){
+        lp.removeAttribute("ry"); lp.removeAttribute("rx");
+        rp.removeAttribute("ry"); rp.removeAttribute("rx");
+      }, 120);
+    }, 3500);
+
+    buildGrid();
+    updateUI();
+  </script>
+</body>
+</html>
