@@ -1,440 +1,80 @@
 <!DOCTYPE html>
 <html lang='en'>
 <head>
-  <meta charset='UTF-8' />
-  <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+  <meta charset='UTF-8'/>
+  <meta name='viewport' content='width=device-width,initial-scale=1.0'/>
   <title>ADC Talk Order Generator</title>
+  <script src='https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js'></script>
+  <script src='https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js'></script>
   <style>
-    :root {
-      --bg:     #1A1A1A;
-      --card:   #2D2D2D;
-      --card2:  #383838;
-      --border: #444444;
-      --purple: #A187FF;
-      --pink:   #FF9BFC;
-      --teal:   #2BEBCB;
-      --green:  #58EB81;
-      --yellow: #FFF347;
-      --gold:   #E5C574;
-      --white:  #FFFFFF;
-      --grey:   #ADADAD;
+    :root{
+      --bg:#1A1A1A;--card:#2D2D2D;--card2:#383838;--border:#444;
+      --purple:#A187FF;--teal:#2BEBCB;--green:#58EB81;
+      --yellow:#FFF347;--gold:#E5C574;--white:#FFF;--grey:#ADADAD;--pink:#FF9BFC;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: var(--bg); min-height: 100vh;
-      display: flex; flex-direction: column; align-items: center;
-      padding: 20px 16px 40px; color: var(--white);
-    }
-    h1 { font-size: 1.5rem; color: var(--purple); margin-bottom: 4px; text-align: center; letter-spacing: 1px; font-weight: 800; }
-    .subtitle { font-size: 0.82rem; color: var(--grey); text-align: center; margin-bottom: 18px; }
-    .elmo-wrapper { display: flex; flex-direction: column; align-items: center; margin-bottom: 14px; }
-    .speech-bubble {
-      background: var(--card); border: 2px solid var(--purple); border-radius: 16px;
-      padding: 11px 16px; max-width: 280px; font-size: 0.88rem; color: var(--white);
-      text-align: center; position: relative; margin-bottom: 10px; line-height: 1.45;
-      min-height: 50px; transition: opacity 0.15s ease;
-    }
-    .speech-bubble::after {
-      content: ''; position: absolute; bottom: -13px; left: 50%;
-      transform: translateX(-50%); border: 7px solid transparent; border-top-color: var(--purple);
-    }
-    .speech-bubble::before {
-      content: ''; position: absolute; bottom: -8px; left: 50%;
-      transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--card); z-index: 1;
-    }
-    .elmo-img {
-      width: 110px; height: 110px; object-fit: contain;
-      filter: drop-shadow(0 4px 14px rgba(161,135,255,0.4));
-    }
-    .elmo-img.bounce    { animation: bounce 0.55s ease; }
-    .elmo-img.celebrate { animation: celebrate 0.72s ease infinite; }
-    @keyframes bounce {
-      0%   { transform: translateY(0) rotate(0); }
-      28%  { transform: translateY(-18px) rotate(-7deg); }
-      58%  { transform: translateY(-6px) rotate(6deg); }
-      100% { transform: translateY(0) rotate(0); }
-    }
-    @keyframes celebrate {
-      0%   { transform: translateY(0) rotate(-8deg) scale(1); }
-      50%  { transform: translateY(-14px) rotate(8deg) scale(1.08); }
-      100% { transform: translateY(0) rotate(-8deg) scale(1); }
-    }
-    .card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); padding: 22px 18px; width: 100%; max-width: 420px; }
-    .card-title { font-size: 0.95rem; font-weight: 700; color: var(--teal); margin-bottom: 12px; text-align: center; }
-    .members-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 18px; }
-    .member-btn {
-      display: flex; align-items: center; gap: 8px; padding: 9px 11px;
-      border-radius: 12px; border: 2px solid var(--border);
-      background: var(--card2); cursor: pointer; font-size: 0.88rem;
-      font-weight: 500; color: var(--grey); transition: all 0.18s;
-      user-select: none; -webkit-tap-highlight-color: transparent; width: 100%;
-    }
-    .member-btn.selected { border-color: var(--purple); background: rgba(161,135,255,0.13); color: var(--white); }
-    .avatar {
-      width: 30px; height: 30px; border-radius: 50%; background: var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.74rem; font-weight: 700; color: var(--grey); flex-shrink: 0; transition: all 0.18s;
-    }
-    .member-btn.selected .avatar { background: var(--purple); color: #111; }
-    .checkmark { margin-left: auto; opacity: 0; color: var(--teal); font-size: 0.95rem; transition: opacity 0.18s; }
-    .member-btn.selected .checkmark { opacity: 1; }
-    .btn-row { display: flex; gap: 9px; margin-bottom: 9px; }
-    .btn {
-      flex: 1; padding: 12px 8px; border-radius: 12px; border: none;
-      font-size: 0.92rem; font-weight: 700; cursor: pointer;
-      transition: transform 0.13s, filter 0.13s; -webkit-tap-highlight-color: transparent;
-    }
-    .btn:active { transform: scale(0.95); }
-    .btn-yellow { background: var(--yellow); color: #111; }
-    .btn-yellow:hover { filter: brightness(1.08); }
-    .btn-teal   { background: var(--teal); color: #111; }
-    .btn-teal:hover { filter: brightness(1.08); }
-    .btn-purple { background: var(--purple); color: #111; }
-    .btn-purple:hover { filter: brightness(1.08); }
-    .btn-secondary { background: var(--card2); color: var(--grey); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: #484848; color: var(--white); }
-    .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; filter: none !important; }
-    .select-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
-    .btn-tiny {
-      padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border);
-      font-size: 0.76rem; font-weight: 600; cursor: pointer;
-      background: var(--card2); color: var(--grey); transition: all 0.13s;
-    }
-    .btn-tiny:hover { background: #484848; color: var(--white); }
-    .counter-label { margin-left: auto; font-size: 0.76rem; color: var(--grey); }
-    .voting-screen { display: none; margin-top: 16px; }
-    .voting-screen.visible { display: block; }
-    .pass-screen { display: none; }
-    .pass-screen.visible { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 10px 0; }
-    .voter-badge {
-      background: rgba(161,135,255,0.15); border: 1.5px solid var(--purple);
-      border-radius: 10px; padding: 8px 16px; font-size: 0.82rem;
-      color: var(--purple); font-weight: 700; text-align: center;
-    }
-    .vote-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin: 10px 0; }
-    .vote-btn {
-      padding: 13px 8px; border-radius: 12px; border: 2px solid var(--border);
-      background: var(--card2); cursor: pointer; font-size: 0.92rem;
-      font-weight: 700; color: var(--white); transition: all 0.18s;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .vote-btn:hover { border-color: var(--yellow); background: rgba(255,243,71,0.12); color: var(--yellow); }
-    .vote-btn.voted { border-color: var(--green); background: rgba(88,235,129,0.15); color: var(--green); animation: popIn 0.3s ease; }
-    .pass-box {
-      background: rgba(43,235,203,0.1); border: 1.5px solid var(--teal);
-      border-radius: 14px; padding: 18px; text-align: center; width: 100%;
-    }
-    .pass-box h3 { font-size: 1rem; color: var(--teal); margin-bottom: 8px; }
-    .pass-box p  { font-size: 0.82rem; color: var(--grey); }
-    .vote-progress-label { font-size: 0.76rem; color: var(--grey); text-align: center; margin-bottom: 6px; }
-    .progress-wrap { background: var(--border); border-radius: 5px; height: 4px; margin-bottom: 14px; overflow: hidden; }
-    .progress-fill { height: 100%; border-radius: 5px; background: var(--purple); width: 0%; transition: width 0.35s ease; }
-    .results-section { display: none; margin-top: 18px; }
-    .results-section.visible { display: block; }
-    .result-divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
-    .result-title { font-size: 0.88rem; font-weight: 700; color: var(--teal); text-align: center; margin-bottom: 12px; }
-    .order-list { list-style: none; }
-    .order-item {
-      display: flex; align-items: center; gap: 11px;
-      padding: 11px 13px; border-radius: 12px; margin-bottom: 7px;
-      background: var(--card2); border: 1.5px solid var(--border);
-      font-size: 0.93rem; font-weight: 600; color: var(--white);
-      animation: slideIn 0.4s ease forwards;
-    }
-    @keyframes slideIn { from { opacity:0; transform: translateX(-16px); } to { opacity:1; transform: translateX(0); } }
-    @keyframes popIn  { 0%{transform:scale(0.88);opacity:0.4;} 60%{transform:scale(1.04);} 100%{transform:scale(1);opacity:1;} }
-    .order-num {
-      width: 27px; height: 27px; border-radius: 50%; background: var(--purple); color: #111;
-      font-size: 0.78rem; font-weight: 800;
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    }
-    .order-name { flex: 1; }
-    .vote-count-badge {
-      font-size: 0.74rem; font-weight: 700; color: var(--yellow);
-      background: rgba(255,243,71,0.1); border: 1px solid rgba(255,243,71,0.3);
-      border-radius: 8px; padding: 3px 8px; white-space: nowrap;
-    }
-    .tie-badge { font-size: 0.7rem; color: var(--gold); margin-left: 2px; }
-    footer { margin-top: 22px; font-size: 0.72rem; color: var(--border); text-align: center; }
-  </style>
-</head>
-<body>
-  <h1>&#127897; Talk Order Generator</h1>
-  <p class='subtitle'>Guided by Elmo &nbsp;&#8226;&nbsp; ADC Consulting</p>
-
-  <div class='elmo-wrapper'>
-    <div class='speech-bubble' id='speechBubble'>
-      Hi there! Elmo is SO excited to see you! Who is joining today? &#127881;
-    </div>
-    <img class='elmo-img' id='elmoImg'
-      src='https://pngimg.com/uploads/elmo/elmo_PNG90502.png'
-      alt='Elmo from Sesame Street' />
-  </div>
-
-  <div class='card'>
-
-    <!-- STEP 1: Select attendees -->
-    <div id='stepSelect'>
-      <div class='card-title'>Who is in the meeting? &#128075;</div>
-      <div class='select-row'>
-        <button class='btn-tiny' onclick='selectAll()'>Select all</button>
-        <button class='btn-tiny' onclick='deselectAll()'>Clear</button>
-        <span class='counter-label' id='counterLabel'>0 selected</span>
-      </div>
-      <div class='members-grid' id='membersGrid'></div>
-      <div class='btn-row'>
-        <button class='btn btn-yellow' id='startVotingBtn' onclick='startVoting()' disabled>
-          &#128229; Start voting!
-        </button>
-        <button class='btn btn-secondary' onclick='resetAll()'>Reset</button>
-      </div>
-    </div>
-
-    <!-- STEP 2: Voting -->
-    <div class='voting-screen' id='stepVoting'>
-      <div id='votePanel'>
-        <div class='voter-badge' id='voterBadge'>Voter 1 of 5</div>
-        <div class='card-title' style='margin-top:10px;'>Who should go first?</div>
-        <div class='vote-progress-label' id='voteProgressLabel'>0 of 0 voted</div>
-        <div class='progress-wrap'><div class='progress-fill' id='voteProgressFill'></div></div>
-        <div class='vote-grid' id='voteGrid'></div>
-      </div>
-      <!-- Pass screen shown after each vote -->
-      <div class='pass-screen' id='passScreen'>
-        <div class='pass-box'>
-          <h3>&#128274; Vote recorded!</h3>
-          <p id='passMsg'>Pass the phone to the next person.</p>
-        </div>
-        <button class='btn btn-purple' style='width:100%;' onclick='nextVoter()'>
-          &#128073; I am ready to vote
-        </button>
-      </div>
-    </div>
-
-    <!-- STEP 3: Results -->
-    <div class='results-section' id='stepResults'>
-      <hr class='result-divider'/>
-      <div class='result-title'>&#127897; Talk order by votes</div>
-      <ol class='order-list' id='orderList'></ol>
-      <div class='btn-row' style='margin-top:12px;'>
-        <button class='btn btn-secondary' onclick='resetAll()'>&#8635; Start over</button>
-      </div>
-    </div>
-
-  </div>
-
-  <footer>Made with &#10084; for ADC Consulting</footer>
-
-  <script>
-    var MEMBERS = ['Alinda','Elianne','Lisette','Harm','Jochem','Laurent','Timon'];
-
-    var selected      = {};
-    var attendees     = [];
-    var currentVoter  = 0;
-    var votes         = {};
-    var votingStarted = false;
-
-    var MSG_NONE      = 'Hi there! Elmo is SO excited! Who is in the meeting today? &#127881;';
-    var MSG_PICK      = 'Elmo loves __N__! Keep picking! &#128400;';
-    var MSG_READY     = '__C__ friends today! Click Start voting when everyone is selected! &#128229;';
-    var MSG_VOTE      = 'Psst! Voter __I__ of __T__, pick who should go FIRST! Elmo will not tell anyone! &#129325;';
-    var MSG_PASS      = 'Nice! Pass to the next person! &#128073;';
-    var MSG_LAST_VOTE = 'Last vote! Make it count! &#129351;';
-    var MSG_RESULTS   = 'The votes are in! Here is the order! Democracy at work! &#127882;';
-    var MSG_RESET     = 'Let us start over! Who is here today? &#127775;';
-
-    function buildGrid() {
-      var grid = document.getElementById('membersGrid');
-      grid.innerHTML = '';
-      MEMBERS.forEach(function(name) {
-        var btn = document.createElement('button');
-        btn.className = 'member-btn' + (selected[name] ? ' selected' : '');
-        btn.id = 'btn-' + name;
-        btn.onclick = (function(n){ return function(){ toggleMember(n); }; })(name);
-        var av = document.createElement('div');
-        av.className = 'avatar';
-        av.textContent = name.slice(0,2).toUpperCase();
-        var ns = document.createElement('span');
-        ns.textContent = name;
-        var cs = document.createElement('span');
-        cs.className = 'checkmark';
-        cs.textContent = '✓';
-        btn.appendChild(av); btn.appendChild(ns); btn.appendChild(cs);
-        grid.appendChild(btn);
-      });
-    }
-
-    function toggleMember(name) {
-      if (selected[name]) { delete selected[name]; }
-      else { selected[name] = true; say(MSG_PICK.split('__N__').join(name)); bounceElmo(); }
-      updateSelectUI();
-    }
-    function selectAll() {
-      MEMBERS.forEach(function(m){ selected[m] = true; });
-      updateSelectUI();
-      say(MSG_READY.split('__C__').join(MEMBERS.length)); bounceElmo();
-    }
-    function deselectAll() { selected = {}; updateSelectUI(); say(MSG_NONE); }
-    function countSelected() { return Object.keys(selected).length; }
-
-    function updateSelectUI() {
-      var count = countSelected();
-      MEMBERS.forEach(function(name) {
-        var btn = document.getElementById('btn-' + name);
-        if (!btn) return;
-        btn.className = 'member-btn' + (selected[name] ? ' selected' : '');
-      });
-      document.getElementById('counterLabel').textContent = count + ' selected';
-      document.getElementById('startVotingBtn').disabled = (count < 2);
-      if (count >= 2) say(MSG_READY.split('__C__').join(count));
-      else if (count === 0) say(MSG_NONE);
-    }
-
-    function startVoting() {
-      attendees = Object.keys(selected);
-      currentVoter = 0;
-      votes = {};
-      attendees.forEach(function(n){ votes[n] = { count: 0, firstTime: null }; });
-      votingStarted = true;
-      document.getElementById('stepSelect').style.display = 'none';
-      document.getElementById('stepVoting').classList.add('visible');
-      showVotePanel();
-    }
-
-    function showVotePanel() {
-      document.getElementById('passScreen').classList.remove('visible');
-      document.getElementById('passScreen').style.display = 'none';
-      document.getElementById('votePanel').style.display = 'block';
-      var total = attendees.length;
-      var idx   = currentVoter + 1;
-      document.getElementById('voterBadge').textContent = 'Voter ' + idx + ' of ' + total;
-      document.getElementById('voteProgressLabel').textContent = currentVoter + ' of ' + total + ' voted';
-      var pct = Math.round((currentVoter / total) * 100);
-      document.getElementById('voteProgressFill').style.width = pct + '%';
-      if (idx === total) { say(MSG_LAST_VOTE); }
-      else {
-        var m = MSG_VOTE.split('__I__').join(idx).split('__T__').join(total);
-        say(m);
-      }
-      bounceElmo();
-      buildVoteGrid();
-    }
-
-    function buildVoteGrid() {
-      var grid = document.getElementById('voteGrid');
-      grid.innerHTML = '';
-      attendees.forEach(function(name) {
-        var btn = document.createElement('button');
-        btn.className = 'vote-btn';
-        btn.textContent = name;
-        btn.onclick = (function(n, b){ return function(){ castVote(n, b); }; })(name, btn);
-        grid.appendChild(btn);
-      });
-    }
-
-    function castVote(name, btn) {
-      var allBtns = document.querySelectorAll('.vote-btn');
-      allBtns.forEach(function(b){ b.disabled = true; });
-      btn.classList.add('voted');
-      var now = Date.now();
-      votes[name].count++;
-      if (votes[name].firstTime === null) {
-        votes[name].firstTime = now;
-      } else {
-        if (now < votes[name].firstTime) votes[name].firstTime = now;
-      }
-      currentVoter++;
-      setTimeout(function() {
-        if (currentVoter >= attendees.length) { showResults(); }
-        else { showPassScreen(); }
-      }, 500);
-    }
-
-    function showPassScreen() {
-      document.getElementById('votePanel').style.display = 'none';
-      var ps = document.getElementById('passScreen');
-      ps.style.display = 'flex';
-      ps.classList.add('visible');
-      var remaining = attendees.length - currentVoter;
-      document.getElementById('passMsg').textContent =
-        remaining + ' person' + (remaining === 1 ? '' : 's') + ' left to vote. Pass the phone!';
-      say(MSG_PASS); bounceElmo();
-    }
-
-    function nextVoter() { showVotePanel(); }
-
-    function showResults() {
-      document.getElementById('stepVoting').classList.remove('visible');
-      document.getElementById('stepVoting').style.display = 'none';
-      document.getElementById('stepResults').classList.add('visible');
-      var sorted = attendees.slice().sort(function(a, b) {
-        if (votes[b].count !== votes[a].count) return votes[b].count - votes[a].count;
-        var ta = votes[a].firstTime || 0;
-        var tb = votes[b].firstTime || 0;
-        return ta - tb;
-      });
-      var list = document.getElementById('orderList');
-      list.innerHTML = '';
-      sorted.forEach(function(name, i) {
-        var vc   = votes[name].count;
-        var prev = i > 0 ? votes[sorted[i-1]].count : -1;
-        var isTie = (i > 0 && vc === prev);
-        var li = document.createElement('li');
-        li.className = 'order-item';
-        li.style.animationDelay = (i * 0.08) + 's';
-        var nd = document.createElement('div');
-        nd.className = 'order-num'; nd.textContent = '' + (i + 1);
-        var ns = document.createElement('span');
-        ns.className = 'order-name'; ns.textContent = name;
-        var vc_badge = document.createElement('span');
-        vc_badge.className = 'vote-count-badge';
-        vc_badge.textContent = vc + (vc === 1 ? ' vote' : ' votes');
-        li.appendChild(nd); li.appendChild(ns); li.appendChild(vc_badge);
-        if (isTie) {
-          var tb = document.createElement('span');
-          tb.className = 'tie-badge'; tb.textContent = '(tie ⏱)';
-          li.appendChild(tb);
-        }
-        list.appendChild(li);
-      });
-      say(MSG_RESULTS); celebrateElmo();
-      setTimeout(function(){ stopCelebrate(); }, 2500);
-    }
-
-    function resetAll() {
-      selected = {}; attendees = []; currentVoter = 0; votes = {}; votingStarted = false;
-      document.getElementById('stepSelect').style.display = 'block';
-      document.getElementById('stepVoting').classList.remove('visible');
-      document.getElementById('stepVoting').style.display = '';
-      document.getElementById('stepResults').classList.remove('visible');
-      document.getElementById('orderList').innerHTML = '';
-      document.getElementById('passScreen').classList.remove('visible');
-      document.getElementById('passScreen').style.display = 'none';
-      document.getElementById('votePanel').style.display = 'block';
-      buildGrid(); updateSelectUI();
-      say(MSG_RESET); bounceElmo();
-    }
-
-    function say(msg) {
-      var b = document.getElementById('speechBubble');
-      b.style.opacity = '0';
-      setTimeout(function(){ b.innerHTML = msg; b.style.opacity = '1'; }, 140);
-    }
-    function bounceElmo() {
-      var el = document.getElementById('elmoImg');
-      el.classList.remove('bounce','celebrate');
-      void el.offsetWidth;
-      el.classList.add('bounce');
-      el.addEventListener('animationend', function(){ el.classList.remove('bounce'); }, { once: true });
-    }
-    function celebrateElmo() {
-      var el = document.getElementById('elmoImg');
-      el.classList.remove('bounce'); el.classList.add('celebrate');
-    }
-    function stopCelebrate() { document.getElementById('elmoImg').classList.remove('celebrate'); }
-
-    buildGrid(); updateSelectUI();
-  </script>
-</body>
-</html>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;
+         display:flex;flex-direction:column;align-items:center;
+         padding:20px 16px 40px;color:var(--white);}
+    h1{font-size:1.5rem;color:var(--purple);margin-bottom:4px;text-align:center;
+       letter-spacing:1px;font-weight:800;}
+    .subtitle{font-size:.82rem;color:var(--grey);text-align:center;margin-bottom:18px;}
+    .elmo-wrapper{display:flex;flex-direction:column;align-items:center;margin-bottom:14px;}
+    .speech-bubble{background:var(--card);border:2px solid var(--purple);border-radius:16px;
+      padding:11px 16px;max-width:280px;font-size:.88rem;color:var(--white);text-align:center;
+      position:relative;margin-bottom:10px;line-height:1.45;min-height:50px;transition:opacity .15s;}
+    .speech-bubble::after{content:'';position:absolute;bottom:-13px;left:50%;
+      transform:translateX(-50%);border:7px solid transparent;border-top-color:var(--purple);}
+    .speech-bubble::before{content:'';position:absolute;bottom:-8px;left:50%;
+      transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--card);z-index:1;}
+    .elmo-img{width:110px;height:110px;object-fit:contain;
+      filter:drop-shadow(0 4px 14px rgba(161,135,255,.4));}
+    .elmo-img.bounce{animation:bounce .55s ease;}
+    .elmo-img.celebrate{animation:celebrate .72s ease infinite;}
+    @keyframes bounce{0%{transform:translateY(0) rotate(0);}
+      28%{transform:translateY(-18px) rotate(-7deg);}
+      58%{transform:translateY(-6px) rotate(6deg);}
+      100%{transform:translateY(0) rotate(0);}}
+    @keyframes celebrate{
+      0%{transform:translateY(0) rotate(-8deg) scale(1);}
+      50%{transform:translateY(-14px) rotate(8deg) scale(1.08);}
+      100%{transform:translateY(0) rotate(-8deg) scale(1);}}
+    .card{background:var(--card);border-radius:20px;border:1px solid var(--border);
+          padding:22px 18px;width:100%;max-width:420px;}
+    .card-title{font-size:.95rem;font-weight:700;color:var(--teal);margin-bottom:12px;text-align:center;}
+    .members-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;}
+    .member-btn{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:12px;
+      border:2px solid var(--border);background:var(--card2);cursor:pointer;font-size:.88rem;
+      font-weight:500;color:var(--grey);transition:all .18s;user-select:none;width:100%;}
+    .member-btn.selected{border-color:var(--purple);background:rgba(161,135,255,.13);color:var(--white);}
+    .avatar{width:30px;height:30px;border-radius:50%;background:var(--border);display:flex;
+      align-items:center;justify-content:center;font-size:.74rem;font-weight:700;
+      color:var(--grey);flex-shrink:0;transition:all .18s;}
+    .member-btn.selected .avatar{background:var(--purple);color:#111;}
+    .checkmark{margin-left:auto;opacity:0;color:var(--teal);font-size:.95rem;transition:opacity .18s;}
+    .member-btn.selected .checkmark{opacity:1;}
+    .btn-row{display:flex;gap:9px;margin-bottom:9px;}
+    .btn{flex:1;padding:12px 8px;border-radius:12px;border:none;font-size:.92rem;font-weight:700;
+         cursor:pointer;transition:transform .13s,filter .13s;}
+    .btn:active{transform:scale(.95);}
+    .btn-yellow{background:var(--yellow);color:#111;}  .btn-yellow:hover{filter:brightness(1.08);}
+    .btn-teal{background:var(--teal);color:#111;}      .btn-teal:hover{filter:brightness(1.08);}
+    .btn-purple{background:var(--purple);color:#111;}  .btn-purple:hover{filter:brightness(1.08);}
+    .btn-secondary{background:var(--card2);color:var(--grey);border:1px solid var(--border);}
+    .btn-secondary:hover{background:#484848;color:var(--white);}
+    .btn:disabled{opacity:.3;cursor:not-allowed;transform:none!important;filter:none!important;}
+    .select-row{display:flex;gap:8px;margin-bottom:12px;align-items:center;}
+    .btn-tiny{padding:5px 10px;border-radius:8px;border:1px solid var(--border);font-size:.76rem;
+              font-weight:600;cursor:pointer;background:var(--card2);color:var(--grey);transition:all .13s;}
+    .btn-tiny:hover{background:#484848;color:var(--white);}
+    .counter-label{margin-left:auto;font-size:.76rem;color:var(--grey);}
+    .share-box{background:rgba(43,235,203,.07);border:1.5px solid var(--teal);
+               border-radius:16px;padding:18px;text-align:center;margin-bottom:14px;}
+    .session-code{font-family:monospace;font-size:2.4rem;font-weight:900;color:var(--teal);
+                  letter-spacing:6px;margin:6px 0;}
+    .share-label{font-size:.76rem;color:var(--grey);margin-bottom:6px;}
+    .qr-img{width:160px;height:160px;border-radius:10px;margin:10px auto;display:block;
+            border:3px solid var(--teal);}
+    .copy-row{display:flex;gap:8px;margin-top:10px;}
+    .copy-input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;
+                padding:7px 10px;font-size:.74rem;color:var(--grey);outl
