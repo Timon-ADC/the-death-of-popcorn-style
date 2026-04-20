@@ -1,238 +1,286 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Talk Order Generator</title>
+  <meta charset='UTF-8' />
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'/>
+  <title>ADC Talk Order Generator</title>
   <style>
+    :root {
+      --bg:     #1A1A1A;
+      --card:   #2D2D2D;
+      --card2:  #383838;
+      --border: #444444;
+      --purple: #A187FF;
+      --pink:   #FF9BFC;
+      --teal:   #2BEBCB;
+      --green:  #58EB81;
+      --yellow: #FFF347;
+      --gold:   #E5C574;
+      --white:  #FFFFFF;
+      --grey:   #ADADAD;
+    }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      background: #FFF8DC; min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg); min-height: 100vh;
       display: flex; flex-direction: column; align-items: center;
-      padding: 20px 16px 40px;
+      padding: 20px 16px 40px; color: var(--white);
     }
-    h1 { font-size: 1.6rem; color: #c0392b; margin-bottom: 4px; text-align: center; letter-spacing: 1px; }
-    .subtitle { font-size: 0.85rem; color: #888; text-align: center; margin-bottom: 20px; }
-    .elmo-wrapper { display: flex; flex-direction: column; align-items: center; margin-bottom: 16px; }
+    h1 { font-size: 1.5rem; color: var(--purple); margin-bottom: 4px; text-align: center; letter-spacing: 1px; font-weight: 800; }
+    .subtitle { font-size: 0.82rem; color: var(--grey); text-align: center; margin-bottom: 18px; }
+    .elmo-wrapper { display: flex; flex-direction: column; align-items: center; margin-bottom: 14px; }
     .speech-bubble {
-      background: #fff; border: 3px solid #e74c3c; border-radius: 20px;
-      padding: 12px 18px; max-width: 280px; font-size: 0.95rem; color: #333;
-      text-align: center; position: relative; margin-bottom: 10px; line-height: 1.4;
-      min-height: 52px; transition: opacity 0.15s ease;
+      background: var(--card); border: 2px solid var(--purple); border-radius: 16px;
+      padding: 11px 16px; max-width: 270px; font-size: 0.88rem; color: var(--white);
+      text-align: center; position: relative; margin-bottom: 10px; line-height: 1.45;
+      min-height: 50px; transition: opacity 0.15s ease;
     }
     .speech-bubble::after {
-      content: ""; position: absolute; bottom: -16px; left: 50%;
-      transform: translateX(-50%); border: 8px solid transparent; border-top-color: #e74c3c;
+      content: ''; position: absolute; bottom: -13px; left: 50%;
+      transform: translateX(-50%); border: 7px solid transparent; border-top-color: var(--purple);
     }
     .speech-bubble::before {
-      content: ""; position: absolute; bottom: -10px; left: 50%;
-      transform: translateX(-50%); border: 7px solid transparent; border-top-color: #fff; z-index: 1;
+      content: ''; position: absolute; bottom: -8px; left: 50%;
+      transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--card); z-index: 1;
     }
-    .elmo-svg { width: 120px; height: 140px; filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.15)); }
-    .elmo-svg.bounce { animation: bounce 0.6s ease; }
-    .elmo-svg.celebrate { animation: celebrate 0.8s ease infinite; }
+    .elmo-svg { width: 115px; height: 140px; filter: drop-shadow(0 4px 14px rgba(161,135,255,0.3)); }
+    .elmo-svg.bounce    { animation: bounce 0.55s ease; }
+    .elmo-svg.celebrate { animation: celebrate 0.72s ease infinite; }
     @keyframes bounce {
-      0%   { transform: translateY(0); }
-      30%  { transform: translateY(-18px) rotate(-5deg); }
-      60%  { transform: translateY(-8px) rotate(5deg); }
-      100% { transform: translateY(0) rotate(0deg); }
+      0%   { transform: translateY(0) rotate(0); }
+      28%  { transform: translateY(-18px) rotate(-7deg); }
+      58%  { transform: translateY(-6px) rotate(6deg); }
+      100% { transform: translateY(0) rotate(0); }
     }
     @keyframes celebrate {
-      0%   { transform: translateY(0) rotate(-8deg); }
-      50%  { transform: translateY(-14px) rotate(8deg); }
-      100% { transform: translateY(0) rotate(-8deg); }
+      0%   { transform: translateY(0) rotate(-8deg) scale(1); }
+      50%  { transform: translateY(-14px) rotate(8deg) scale(1.07); }
+      100% { transform: translateY(0) rotate(-8deg) scale(1); }
     }
-    .card {
-      background: #fff; border-radius: 20px;
-      box-shadow: 0 4px 18px rgba(0,0,0,0.1);
-      padding: 24px 20px; width: 100%; max-width: 420px;
-    }
-    .card-title { font-size: 1rem; font-weight: 700; color: #c0392b; margin-bottom: 14px; text-align: center; }
-    .members-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    .card { background: var(--card); border-radius: 20px; border: 1px solid var(--border); padding: 22px 18px; width: 100%; max-width: 420px; }
+    .card-title { font-size: 0.95rem; font-weight: 700; color: var(--teal); margin-bottom: 12px; text-align: center; }
+    .members-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; margin-bottom: 18px; }
     .member-btn {
-      display: flex; align-items: center; gap: 8px; padding: 10px 12px;
-      border-radius: 14px; border: 2.5px solid #ddd; background: #f9f9f9;
-      cursor: pointer; font-size: 0.95rem; font-weight: 500; color: #555;
-      transition: all 0.2s; user-select: none; -webkit-tap-highlight-color: transparent; width: 100%;
+      display: flex; align-items: center; gap: 8px; padding: 9px 11px;
+      border-radius: 12px; border: 2px solid var(--border);
+      background: var(--card2); cursor: pointer; font-size: 0.88rem;
+      font-weight: 500; color: var(--grey); transition: all 0.18s;
+      user-select: none; -webkit-tap-highlight-color: transparent; width: 100%;
     }
-    .member-btn.selected { border-color: #e74c3c; background: #fdecea; color: #c0392b; }
+    .member-btn.selected { border-color: var(--purple); background: rgba(161,135,255,0.13); color: var(--white); }
     .avatar {
-      width: 32px; height: 32px; border-radius: 50%; background: #ddd;
+      width: 30px; height: 30px; border-radius: 50%; background: var(--border);
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.8rem; font-weight: 700; color: #fff; flex-shrink: 0; transition: background 0.2s;
+      font-size: 0.74rem; font-weight: 700; color: var(--grey); flex-shrink: 0; transition: all 0.18s;
     }
-    .member-btn.selected .avatar { background: #e74c3c; }
-    .checkmark { margin-left: auto; opacity: 0; color: #e74c3c; font-size: 1rem; transition: opacity 0.2s; }
+    .member-btn.selected .avatar { background: var(--purple); color: #111; }
+    .checkmark { margin-left: auto; opacity: 0; color: var(--teal); font-size: 0.95rem; transition: opacity 0.18s; }
     .member-btn.selected .checkmark { opacity: 1; }
-    .btn-row { display: flex; gap: 10px; margin-bottom: 8px; }
+    .btn-row { display: flex; gap: 9px; margin-bottom: 9px; }
     .btn {
-      flex: 1; padding: 13px 10px; border-radius: 14px; border: none;
-      font-size: 0.95rem; font-weight: 700; cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
+      flex: 1; padding: 12px 8px; border-radius: 12px; border: none;
+      font-size: 0.92rem; font-weight: 700; cursor: pointer;
+      transition: transform 0.13s, filter 0.13s; -webkit-tap-highlight-color: transparent;
     }
-    .btn:active { transform: scale(0.96); }
-    .btn-primary { background: #e74c3c; color: #fff; box-shadow: 0 4px 12px rgba(231,76,60,0.35); }
-    .btn-primary:hover { box-shadow: 0 6px 16px rgba(231,76,60,0.45); }
-    .btn-secondary { background: #f0f0f0; color: #666; }
-    .btn-secondary:hover { background: #e8e8e8; }
-    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
-    .results-section { display: none; margin-top: 20px; }
+    .btn:active { transform: scale(0.95); }
+    .btn-generate { background: var(--yellow); color: #111; }
+    .btn-generate:hover { filter: brightness(1.08); }
+    .btn-reveal { background: var(--teal); color: #111; }
+    .btn-reveal:hover { filter: brightness(1.08); }
+    .btn-secondary { background: var(--card2); color: var(--grey); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: #484848; color: var(--white); }
+    .btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; filter: none !important; }
+    .select-row { display: flex; gap: 8px; margin-bottom: 12px; align-items: center; }
+    .btn-tiny {
+      padding: 5px 10px; border-radius: 8px; border: 1px solid var(--border);
+      font-size: 0.76rem; font-weight: 600; cursor: pointer;
+      background: var(--card2); color: var(--grey); transition: all 0.13s;
+    }
+    .btn-tiny:hover { background: #484848; color: var(--white); }
+    .counter-label { margin-left: auto; font-size: 0.76rem; color: var(--grey); }
+    .results-section { display: none; margin-top: 18px; }
     .results-section.visible { display: block; }
-    .result-divider { border: none; border-top: 2px dashed #f5c6c2; margin: 16px 0; }
-    .result-title { font-size: 0.9rem; font-weight: 700; color: #c0392b; text-align: center; margin-bottom: 12px; }
+    .result-divider { border: none; border-top: 1px solid var(--border); margin: 14px 0; }
+    .result-title { font-size: 0.88rem; font-weight: 700; color: var(--teal); text-align: center; margin-bottom: 4px; }
+    .reveal-hint { font-size: 0.76rem; color: var(--grey); text-align: center; margin-bottom: 6px; }
+    .progress-wrap { background: var(--border); border-radius: 5px; height: 4px; margin-bottom: 12px; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 5px; background: var(--teal); width: 0%; transition: width 0.35s ease; }
     .order-list { list-style: none; }
     .order-item {
-      display: flex; align-items: center; gap: 12px; padding: 10px 14px;
-      border-radius: 12px; margin-bottom: 8px; background: #fdecea;
-      border-left: 4px solid #e74c3c; font-size: 0.97rem; font-weight: 600; color: #333;
-      opacity: 0; transform: translateX(-20px); animation: slideIn 0.4s ease forwards;
+      display: flex; align-items: center; gap: 11px;
+      padding: 11px 13px; border-radius: 12px; margin-bottom: 7px;
+      background: var(--card2); border: 1.5px solid var(--border);
+      font-size: 0.93rem; font-weight: 600; color: var(--grey);
+      transition: background 0.25s, border-color 0.25s, color 0.25s, transform 0.15s;
+      cursor: default;
     }
-    @keyframes slideIn { to { opacity: 1; transform: translateX(0); } }
+    .order-item.mystery { cursor: pointer; }
+    .order-item.mystery:hover { background: rgba(161,135,255,0.1); border-color: var(--purple); }
+    .order-item.revealed {
+      background: rgba(88,235,129,0.1); border-color: var(--green); color: var(--white);
+      animation: popIn 0.35s ease;
+    }
+    @keyframes popIn {
+      0%   { transform: scale(0.88); opacity: 0.4; }
+      60%  { transform: scale(1.04); }
+      100% { transform: scale(1);    opacity: 1; }
+    }
     .order-num {
-      width: 28px; height: 28px; border-radius: 50%; background: #e74c3c;
-      color: #fff; font-size: 0.8rem; font-weight: 800;
+      width: 27px; height: 27px; border-radius: 50%;
+      background: var(--border); color: var(--grey);
+      font-size: 0.78rem; font-weight: 800;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      transition: background 0.25s, color 0.25s;
     }
-    .confetti-emoji { font-size: 1.2rem; margin-left: auto; }
-    .select-row { display: flex; gap: 8px; margin-bottom: 14px; align-items: center; }
-    .btn-tiny {
-      padding: 6px 12px; border-radius: 10px; border: none; font-size: 0.8rem;
-      font-weight: 600; cursor: pointer; background: #f0f0f0; color: #666; transition: background 0.15s;
-    }
-    .btn-tiny:hover { background: #e0e0e0; }
-    .counter-label { margin-left: auto; font-size: 0.8rem; color: #999; }
-    footer { margin-top: 24px; font-size: 0.75rem; color: #bbb; text-align: center; }
+    .order-item.revealed .order-num { background: var(--green); color: #111; }
+    .order-name { flex: 1; }
+    .order-emoji { font-size: 1.1rem; }
+    footer { margin-top: 22px; font-size: 0.72rem; color: var(--border); text-align: center; }
   </style>
 </head>
 <body>
-
   <h1>&#127897; Talk Order Generator</h1>
-  <p class="subtitle">Guided by Elmo from Sesame Street</p>
+  <p class='subtitle'>Guided by Elmo &nbsp;&#8226;&nbsp; ADC Consulting</p>
 
-  <div class="elmo-wrapper">
-    <div class="speech-bubble" id="speechBubble">
-      Hi there! Elmo is SO happy to see you! Who is here today? Pick your friends! &#127881;
+  <div class='elmo-wrapper'>
+    <div class='speech-bubble' id='speechBubble'>
+      Hi there! Elmo is SO excited to see you! Who is joining today? Pick your friends! &#127881;
     </div>
 
-    <svg class="elmo-svg" id="elmoSvg" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
+    <!-- Improved Elmo SVG -->
+    <svg class='elmo-svg' id='elmoSvg' viewBox='0 0 120 140' xmlns='http://www.w3.org/2000/svg'>
       <!-- Body -->
-      <ellipse cx="60" cy="105" rx="30" ry="28" fill="#e74c3c"/>
-      <!-- Arms -->
-      <path d="M32,95 Q15,90 12,110 Q18,115 28,108" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
-      <path d="M88,95 Q105,90 108,110 Q102,115 92,108" fill="#e74c3c" stroke="#c0392b" stroke-width="1.5"/>
-      <!-- Hands -->
-      <circle cx="12" cy="112" r="7" fill="#e74c3c"/>
-      <circle cx="6" cy="108" r="4" fill="#e74c3c"/>
-      <circle cx="5" cy="116" r="4" fill="#e74c3c"/>
-      <circle cx="108" cy="112" r="7" fill="#e74c3c"/>
-      <circle cx="114" cy="108" r="4" fill="#e74c3c"/>
-      <circle cx="115" cy="116" r="4" fill="#e74c3c"/>
+      <ellipse cx='60' cy='115' rx='26' ry='22' fill='#E53935'/>
+      <!-- Left arm raised -->
+      <path d='M36,108 Q19,92 16,75 Q24,70 30,80 Q33,92 38,106' fill='#E53935' stroke='#C62828' stroke-width='1'/>
+      <!-- Right arm raised -->
+      <path d='M84,108 Q101,92 104,75 Q96,70 90,80 Q87,92 82,106' fill='#E53935' stroke='#C62828' stroke-width='1'/>
+      <!-- Left hand -->
+      <circle cx='15' cy='73' r='7'   fill='#E53935'/>
+      <circle cx='9'  cy='68' r='4.5' fill='#E53935'/>
+      <circle cx='8'  cy='78' r='4.5' fill='#E53935'/>
+      <circle cx='15' cy='65' r='4'   fill='#E53935'/>
+      <!-- Right hand -->
+      <circle cx='105' cy='73' r='7'   fill='#E53935'/>
+      <circle cx='111' cy='68' r='4.5' fill='#E53935'/>
+      <circle cx='112' cy='78' r='4.5' fill='#E53935'/>
+      <circle cx='105' cy='65' r='4'   fill='#E53935'/>
       <!-- Legs -->
-      <ellipse cx="48" cy="130" rx="10" ry="8" fill="#e74c3c"/>
-      <ellipse cx="72" cy="130" rx="10" ry="8" fill="#e74c3c"/>
-      <!-- Feet -->
-      <ellipse cx="46" cy="136" rx="13" ry="6" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
-      <ellipse cx="74" cy="136" rx="13" ry="6" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
-      <!-- Head -->
-      <circle cx="60" cy="55" r="36" fill="#e74c3c"/>
-      <!-- Fur bumps -->
-      <circle cx="30" cy="42" r="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
-      <circle cx="38" cy="28" r="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
-      <circle cx="52" cy="22" r="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
-      <circle cx="68" cy="22" r="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
-      <circle cx="82" cy="28" r="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
-      <circle cx="90" cy="42" r="5" fill="#e74c3c" stroke="#c0392b" stroke-width="1"/>
-      <!-- Eyes -->
-      <ellipse cx="48" cy="52" rx="13" ry="13" fill="white"/>
-      <ellipse cx="73" cy="52" rx="13" ry="13" fill="white"/>
-      <circle cx="50" cy="52" r="7" fill="#1a1a1a" id="leftPupil"/>
-      <circle cx="75" cy="52" r="7" fill="#1a1a1a" id="rightPupil"/>
-      <circle cx="53" cy="49" r="2.5" fill="white"/>
-      <circle cx="78" cy="49" r="2.5" fill="white"/>
-      <!-- Nose -->
-      <ellipse cx="60" cy="66" rx="9" ry="7" fill="#f39c12"/>
-      <ellipse cx="60" cy="66" rx="7" ry="5" fill="#e67e22"/>
-      <circle cx="57" cy="67" r="2" fill="#c0392b"/>
-      <circle cx="63" cy="67" r="2" fill="#c0392b"/>
-      <!-- Mouth -->
-      <path d="M46,76 Q60,88 74,76" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <path d="M50,79 Q60,87 70,79 Q60,85 50,79" fill="white"/>
-      <!-- Eyebrows -->
-      <path d="M38,42 Q48,37 56,41" stroke="#c0392b" stroke-width="3" fill="none" stroke-linecap="round"/>
-      <path d="M64,41 Q72,37 83,42" stroke="#c0392b" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <ellipse cx='50' cy='133' rx='11' ry='8'  fill='#E53935'/>
+      <ellipse cx='70' cy='133' rx='11' ry='8'  fill='#E53935'/>
+      <ellipse cx='49' cy='138' rx='14' ry='6'  fill='#E53935' stroke='#C62828' stroke-width='1'/>
+      <ellipse cx='71' cy='138' rx='14' ry='6'  fill='#E53935' stroke='#C62828' stroke-width='1'/>
+      <!-- HEAD -->
+      <circle cx='60' cy='56' r='40' fill='#E53935'/>
+      <!-- Fur texture bumps -->
+      <circle cx='26' cy='46' r='6' fill='#E53935' stroke='#C62828' stroke-width='1.2'/>
+      <circle cx='33' cy='28' r='6' fill='#E53935' stroke='#C62828' stroke-width='1.2'/>
+      <circle cx='50' cy='18' r='6' fill='#E53935' stroke='#C62828' stroke-width='1.2'/>
+      <circle cx='70' cy='18' r='6' fill='#E53935' stroke='#C62828' stroke-width='1.2'/>
+      <circle cx='87' cy='28' r='6' fill='#E53935' stroke='#C62828' stroke-width='1.2'/>
+      <circle cx='94' cy='46' r='6' fill='#E53935' stroke='#C62828' stroke-width='1.2'/>
+      <!-- Large white eye bases -->
+      <ellipse cx='46' cy='48' rx='14' ry='15' fill='white'/>
+      <ellipse cx='74' cy='48' rx='14' ry='15' fill='white'/>
+      <!-- Pupils -->
+      <circle cx='48' cy='47' r='7' fill='#111111' id='leftPupil'/>
+      <circle cx='76' cy='47' r='7' fill='#111111' id='rightPupil'/>
+      <!-- Eye shine highlights -->
+      <circle cx='51' cy='43' r='2.5' fill='white'/>
+      <circle cx='79' cy='43' r='2.5' fill='white'/>
+      <!-- Orange ball nose -->
+      <circle cx='60' cy='64' r='9'   fill='#FF8C00'/>
+      <circle cx='60' cy='63' r='7.5' fill='#FFA726'/>
+      <circle cx='57' cy='66' r='2' fill='rgba(0,0,0,0.18)'/>
+      <circle cx='63' cy='66' r='2' fill='rgba(0,0,0,0.18)'/>
+      <!-- Wide happy smile -->
+      <path d='M40,76 Q60,96 80,76' stroke='#111111' stroke-width='3.5' fill='none' stroke-linecap='round'/>
+      <!-- Teeth -->
+      <path d='M49,78 Q60,93 71,78 L71,82 Q60,96 49,82 Z' fill='white'/>
+      <line x1='60' y1='79' x2='60' y2='83' stroke='#CCCCCC' stroke-width='1'/>
+      <!-- Eyebrows - friendly arch -->
+      <path d='M34,36 Q46,29 57,35' stroke='#C62828' stroke-width='3.5' fill='none' stroke-linecap='round'/>
+      <path d='M63,35 Q74,29 86,36' stroke='#C62828' stroke-width='3.5' fill='none' stroke-linecap='round'/>
     </svg>
   </div>
 
-  <div class="card">
-    <div class="card-title">Who is in the meeting? &#128075;</div>
-    <div class="select-row">
-      <button class="btn-tiny" onclick="selectAll()">Select all</button>
-      <button class="btn-tiny" onclick="deselectAll()">Clear</button>
-      <span class="counter-label" id="counterLabel">0 selected</span>
+  <div class='card'>
+    <div class='card-title'>Who is in the meeting? &#128075;</div>
+    <div class='select-row'>
+      <button class='btn-tiny' onclick='selectAll()'>Select all</button>
+      <button class='btn-tiny' onclick='deselectAll()'>Clear</button>
+      <span class='counter-label' id='counterLabel'>0 selected</span>
     </div>
-    <div class="members-grid" id="membersGrid"></div>
-    <div class="btn-row">
-      <button class="btn btn-primary" id="generateBtn" onclick="generateOrder()" disabled>
-        &#127922; Generate Order!
+    <div class='members-grid' id='membersGrid'></div>
+    <div class='btn-row'>
+      <button class='btn btn-generate' id='generateBtn' onclick='startReveal()' disabled>
+        &#127922; Shuffle &amp; Start!
       </button>
-      <button class="btn btn-secondary" onclick="resetAll()">Reset</button>
+      <button class='btn btn-secondary' onclick='resetAll()'>Reset</button>
     </div>
-    <div class="results-section" id="resultsSection">
-      <hr class="result-divider"/>
-      <div class="result-title">&#127897; Today's Talk Order</div>
-      <ol class="order-list" id="orderList"></ol>
+    <div class='btn-row'>
+      <button class='btn btn-reveal' id='revealBtn' onclick='revealNext()' disabled>
+        &#128269; Tap to reveal next speaker
+      </button>
+    </div>
+
+    <div class='results-section' id='resultsSection'>
+      <hr class='result-divider'/>
+      <div class='result-title'>&#127897; Tap a card to reveal!</div>
+      <div class='reveal-hint' id='revealHint'>0 of 0 revealed</div>
+      <div class='progress-wrap'><div class='progress-fill' id='progressFill'></div></div>
+      <ol class='order-list' id='orderList'></ol>
     </div>
   </div>
 
-  <footer>Made with &#10084; for the ADC Consulting team</footer>
+  <footer>Made with &#10084; for ADC Consulting</footer>
 
   <script>
-    var MEMBERS = ["Alinda","Elianne","Lisette","Harm","Jochem","Laurent","Timon"];
-    var EMOJIS  = ["&#127881;","&#127775;","&#128293;","&#127880;","&#129395;","&#128079;","&#128640;","&#10024;","&#128170;","&#127882;"];
-    var selected = {};
-    var generated = false;
+    var MEMBERS = ['Alinda','Elianne','Lisette','Harm','Jochem','Laurent','Timon'];
+    var EMOJIS  = ['&#127881;','&#127775;','&#128293;','&#129395;','&#128079;','&#128640;','&#10024;','&#128170;','&#127882;','&#127880;'];
 
-    var MSG_NONE      = "Hi there! Elmo is SO happy to see you! Who is here today? Pick your friends! &#127881;";
-    var MSG_SELECTING = "Oh, Elmo LOVES __NAME__! Who else is here? Keep picking! &#128076;";
-    var MSG_READY     = "Yaaaay! __COUNT__ friends are here! Are you ready? Hit that button! Elmo cannot wait! &#129345;";
-    var MSG_RESULT    = "Wooohooo! Elmo did it! Here is the order! Have a GREAT meeting, everybody! &#127882;";
-    var MSG_SOLO      = "Hehe, it is just __NAME__? Okay, __NAME__ goes first! Obviously! &#128516;";
-    var MSG_RESET     = "Okay okay! Let us start over. Elmo is ready! Who is here today? &#127775;";
+    var selected    = {};
+    var generated   = false;
+    var revealOrder = [];
+    var revealIndex = 0;
+
+    var MSG_NONE   = 'Hi there! Elmo is SO excited to see you! Who is joining today? Pick your friends! &#127881;';
+    var MSG_PICK   = 'Elmo loves __NAME__! Keep picking, who else is here? &#128400;';
+    var MSG_READY2 = 'Ooooh __COUNT__ friends! Elmo is ready! Hit Shuffle to make mystery cards! &#127922;';
+    var MSG_CARDS  = 'The cards are ready! Tap REVEAL to find out who goes first! Elmo is so excited! &#129395;';
+    var MSG_FIRST  = 'YAYYY! __NAME__ goes FIRST! Elmo loves it! Keep tapping! &#127775;';
+    var MSG_MID    = 'Next up is... __NAME__! &#127897; __LEFT__ more to reveal!';
+    var MSG_LAST   = 'And last but not least... __NAME__! &#127882; All done! Have a great meeting!';
+    var MSG_SOLO   = 'Hehe, just __NAME__? OK, __NAME__ goes first! Obviously! &#128516;';
+    var MSG_RESET  = 'OK let us start fresh! Who is here today? Elmo is ready! &#127775;';
 
     function buildGrid() {
-      var grid = document.getElementById("membersGrid");
-      grid.innerHTML = "";
+      var grid = document.getElementById('membersGrid');
+      grid.innerHTML = '';
       MEMBERS.forEach(function(name) {
-        var btn = document.createElement("button");
-        btn.className = "member-btn" + (selected[name] ? " selected" : "");
-        btn.id = "btn-" + name;
-        btn.setAttribute("aria-pressed", selected[name] ? "true" : "false");
+        var btn = document.createElement('button');
+        btn.className = 'member-btn' + (selected[name] ? ' selected' : '');
+        btn.id = 'btn-' + name;
+        btn.setAttribute('aria-pressed', selected[name] ? 'true' : 'false');
         btn.onclick = (function(n){ return function(){ toggleMember(n); }; })(name);
-        var av = document.createElement("div");
-        av.className = "avatar";
+        var av = document.createElement('div');
+        av.className = 'avatar';
         av.textContent = name.slice(0,2).toUpperCase();
-        var ns = document.createElement("span");
+        var ns = document.createElement('span');
         ns.textContent = name;
-        var cs = document.createElement("span");
-        cs.className = "checkmark";
-        cs.textContent = "✓";
-        btn.appendChild(av);
-        btn.appendChild(ns);
-        btn.appendChild(cs);
+        var cs = document.createElement('span');
+        cs.className = 'checkmark';
+        cs.textContent = '✓';
+        btn.appendChild(av); btn.appendChild(ns); btn.appendChild(cs);
         grid.appendChild(btn);
       });
     }
 
     function toggleMember(name) {
-      if (selected[name]) {
-        delete selected[name];
-      } else {
+      if (selected[name]) { delete selected[name]; }
+      else {
         selected[name] = true;
-        if (!generated) {
-          say(MSG_SELECTING.split("__NAME__").join(name));
-          bounceElmo();
-        }
+        if (!generated) { say(MSG_PICK.split('__NAME__').join(name)); bounceElmo(); }
       }
       updateUI();
     }
@@ -240,121 +288,159 @@
     function selectAll() {
       MEMBERS.forEach(function(m){ selected[m] = true; });
       updateUI();
-      say(MSG_READY.split("__COUNT__").join(MEMBERS.length));
+      say(MSG_READY2.split('__COUNT__').join(MEMBERS.length));
       bounceElmo();
     }
 
     function deselectAll() {
       selected = {}; generated = false;
-      hideResults(); updateUI();
-      say(MSG_NONE);
+      hideResults(); updateUI(); say(MSG_NONE);
     }
 
     function countSelected() { return Object.keys(selected).length; }
 
     function updateUI() {
-      MEMBERS.forEach(function(name) {
-        var btn = document.getElementById("btn-" + name);
-        if (!btn) return;
-        btn.className = "member-btn" + (selected[name] ? " selected" : "");
-        btn.setAttribute("aria-pressed", selected[name] ? "true" : "false");
-      });
       var count = countSelected();
-      document.getElementById("counterLabel").textContent = count + " selected";
-      document.getElementById("generateBtn").disabled = (count === 0);
-      if (count >= 2 && !generated) {
-        say(MSG_READY.split("__COUNT__").join(count));
-      } else if (count === 0 && !generated) {
-        say(MSG_NONE);
+      MEMBERS.forEach(function(name) {
+        var btn = document.getElementById('btn-' + name);
+        if (!btn) return;
+        btn.className = 'member-btn' + (selected[name] ? ' selected' : '');
+        btn.setAttribute('aria-pressed', selected[name] ? 'true' : 'false');
+      });
+      document.getElementById('counterLabel').textContent = count + ' selected';
+      document.getElementById('generateBtn').disabled = (count === 0 || generated);
+      document.getElementById('revealBtn').disabled    = (!generated || revealIndex >= revealOrder.length);
+      if (!generated) {
+        if (count === 0) say(MSG_NONE);
+        else if (count >= 2) say(MSG_READY2.split('__COUNT__').join(count));
       }
     }
 
-    function generateOrder() {
-      if (countSelected() === 0) return;
-      generated = true;
-      var people = Object.keys(selected);
-      // Fisher-Yates shuffle
-      for (var i = people.length - 1; i > 0; i--) {
+    function startReveal() {
+      var count = countSelected();
+      if (count === 0) return;
+      generated   = true;
+      revealIndex = 0;
+      revealOrder = Object.keys(selected);
+      /* Fisher-Yates shuffle */
+      for (var i = revealOrder.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
-        var tmp = people[i]; people[i] = people[j]; people[j] = tmp;
+        var t = revealOrder[i]; revealOrder[i] = revealOrder[j]; revealOrder[j] = t;
       }
-      var list = document.getElementById("orderList");
-      list.innerHTML = "";
-      people.forEach(function(name, i) {
-        var li = document.createElement("li");
-        li.className = "order-item";
-        li.style.animationDelay = (i * 0.1) + "s";
-        var nd = document.createElement("div");
-        nd.className = "order-num";
-        nd.textContent = (i + 1).toString();
-        var ns = document.createElement("span");
-        ns.textContent = name;
-        var es = document.createElement("span");
-        es.className = "confetti-emoji";
-        es.innerHTML = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+      var list = document.getElementById('orderList');
+      list.innerHTML = '';
+      for (var k = 0; k < revealOrder.length; k++) {
+        var li = document.createElement('li');
+        li.className = 'order-item mystery';
+        li.id = 'oi-' + k;
+        li.onclick = (function(idx){ return function(){ tapCard(idx); }; })(k);
+        var nd = document.createElement('div');
+        nd.className = 'order-num'; nd.textContent = '' + (k + 1);
+        var ns = document.createElement('span');
+        ns.className = 'order-name'; ns.innerHTML = '&#10067;&#10067;&#10067;';
+        var es = document.createElement('span');
+        es.className = 'order-emoji'; es.innerHTML = '&#10067;';
         li.appendChild(nd); li.appendChild(ns); li.appendChild(es);
         list.appendChild(li);
-      });
-      document.getElementById("resultsSection").classList.add("visible");
-      if (people.length === 1) {
-        say(MSG_SOLO.split("__NAME__").join(people[0]));
+      }
+      document.getElementById('resultsSection').classList.add('visible');
+      setRevealHint();
+      if (revealOrder.length === 1) {
+        say(MSG_SOLO.split('__NAME__').join(revealOrder[0]));
+        setTimeout(function(){ tapCard(0); }, 900);
       } else {
-        say(MSG_RESULT);
+        say(MSG_CARDS);
       }
       celebrateElmo();
-      setTimeout(function(){ stopCelebrate(); }, 3000);
+      setTimeout(function(){ stopCelebrate(); }, 1400);
+      document.getElementById('generateBtn').disabled = true;
+      document.getElementById('revealBtn').disabled   = false;
     }
 
-    function resetAll() {
-      selected = {}; generated = false;
-      buildGrid(); hideResults(); updateUI();
-      say(MSG_RESET); bounceElmo();
+    function tapCard(idx) {
+      if (idx !== revealIndex) return;
+      if (revealIndex >= revealOrder.length) return;
+      var name = revealOrder[revealIndex];
+      var li   = document.getElementById('oi-' + revealIndex);
+      if (!li) return;
+      var ns = li.querySelector('.order-name');
+      var es = li.querySelector('.order-emoji');
+      ns.textContent = name;
+      es.innerHTML   = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+      li.className   = 'order-item revealed';
+      li.onclick     = null;
+      revealIndex++;
+      setRevealHint();
+      var total = revealOrder.length;
+      var left  = total - revealIndex;
+      if (revealIndex === 1 && total > 1) {
+        say(MSG_FIRST.split('__NAME__').join(name)); bounceElmo();
+      } else if (left === 0) {
+        say(MSG_LAST.split('__NAME__').join(name));
+        celebrateElmo();
+        setTimeout(function(){ stopCelebrate(); }, 2200);
+      } else {
+        var m = MSG_MID.split('__NAME__').join(name).split('__LEFT__').join(left);
+        say(m); bounceElmo();
+      }
+      document.getElementById('revealBtn').disabled = (revealIndex >= total);
+    }
+
+    function revealNext() { tapCard(revealIndex); }
+
+    function setRevealHint() {
+      var total = revealOrder.length;
+      document.getElementById('revealHint').textContent = revealIndex + ' of ' + total + ' revealed';
+      var pct = total > 0 ? Math.round((revealIndex / total) * 100) : 0;
+      document.getElementById('progressFill').style.width = pct + '%';
     }
 
     function hideResults() {
-      document.getElementById("resultsSection").classList.remove("visible");
-      document.getElementById("orderList").innerHTML = "";
+      document.getElementById('resultsSection').classList.remove('visible');
+      document.getElementById('orderList').innerHTML = '';
+    }
+
+    function resetAll() {
+      selected = {}; generated = false; revealOrder = []; revealIndex = 0;
+      buildGrid(); hideResults(); updateUI();
+      say(MSG_RESET); bounceElmo();
+      document.getElementById('generateBtn').disabled = true;
+      document.getElementById('revealBtn').disabled   = true;
     }
 
     function say(msg) {
-      var b = document.getElementById("speechBubble");
-      b.style.opacity = "0";
-      setTimeout(function(){ b.innerHTML = msg; b.style.opacity = "1"; }, 150);
+      var b = document.getElementById('speechBubble');
+      b.style.opacity = '0';
+      setTimeout(function(){ b.innerHTML = msg; b.style.opacity = '1'; }, 140);
     }
 
     function bounceElmo() {
-      var el = document.getElementById("elmoSvg");
-      el.classList.remove("bounce","celebrate");
+      var el = document.getElementById('elmoSvg');
+      el.classList.remove('bounce','celebrate');
       void el.offsetWidth;
-      el.classList.add("bounce");
-      el.addEventListener("animationend", function(){ el.classList.remove("bounce"); }, { once: true });
+      el.classList.add('bounce');
+      el.addEventListener('animationend', function(){ el.classList.remove('bounce'); }, { once: true });
     }
-
     function celebrateElmo() {
-      var el = document.getElementById("elmoSvg");
-      el.classList.remove("bounce");
-      el.classList.add("celebrate");
+      var el = document.getElementById('elmoSvg');
+      el.classList.remove('bounce'); el.classList.add('celebrate');
     }
+    function stopCelebrate() { document.getElementById('elmoSvg').classList.remove('celebrate'); }
 
-    function stopCelebrate() {
-      document.getElementById("elmoSvg").classList.remove("celebrate");
-    }
-
-    // Blinking eyes
+    /* Blinking eyes every 3.5s */
     setInterval(function() {
-      var lp = document.getElementById("leftPupil");
-      var rp = document.getElementById("rightPupil");
+      var lp = document.getElementById('leftPupil');
+      var rp = document.getElementById('rightPupil');
       if (!lp || !rp) return;
-      lp.setAttribute("ry","1"); rp.setAttribute("ry","1");
-      lp.setAttribute("rx","7"); rp.setAttribute("rx","7");
+      lp.setAttribute('ry','1'); rp.setAttribute('ry','1');
+      lp.setAttribute('rx','7'); rp.setAttribute('rx','7');
       setTimeout(function(){
-        lp.removeAttribute("ry"); lp.removeAttribute("rx");
-        rp.removeAttribute("ry"); rp.removeAttribute("rx");
-      }, 120);
+        lp.removeAttribute('ry'); lp.removeAttribute('rx');
+        rp.removeAttribute('ry'); rp.removeAttribute('rx');
+      }, 130);
     }, 3500);
 
-    buildGrid();
-    updateUI();
+    buildGrid(); updateUI();
   </script>
 </body>
 </html>
