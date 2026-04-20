@@ -77,4 +77,468 @@
             border:3px solid var(--teal);}
     .copy-row{display:flex;gap:8px;margin-top:10px;}
     .copy-input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;
-                padding:7px 10px;font-size:.74rem;color:var(--grey);outl
+                padding:7px 10px;font-size:.74rem;color:var(--grey);outline:none;}
+    .copy-btn{padding:7px 12px;border-radius:8px;border:none;background:var(--purple);color:#111;
+              font-size:.76rem;font-weight:700;cursor:pointer;white-space:nowrap;}
+    .copy-btn:hover{filter:brightness(1.1);}
+    .join-box{background:rgba(161,135,255,.08);border:1.5px solid var(--purple);
+              border-radius:16px;padding:18px;text-align:center;margin-bottom:14px;}
+    .join-box p{font-size:.82rem;color:var(--grey);margin-bottom:12px;}
+    .code-input{width:100%;background:var(--card2);border:2px solid var(--border);
+                border-radius:10px;padding:12px;font-size:1.6rem;font-weight:900;
+                color:var(--teal);text-align:center;letter-spacing:6px;font-family:monospace;
+                outline:none;text-transform:uppercase;margin-bottom:10px;}
+    .code-input:focus{border-color:var(--purple);}
+    .anon-badge{background:rgba(88,235,129,.12);border:1.5px solid var(--green);
+                border-radius:10px;padding:7px 14px;font-size:.8rem;color:var(--green);
+                font-weight:700;text-align:center;margin-bottom:12px;}
+    .vote-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:10px 0;}
+    .vote-btn{padding:14px 8px;border-radius:12px;border:2px solid var(--border);
+              background:var(--card2);cursor:pointer;font-size:.95rem;font-weight:700;
+              color:var(--white);transition:all .18s;}
+    .vote-btn:hover{border-color:var(--yellow);background:rgba(255,243,71,.1);color:var(--yellow);}
+    .vote-btn.voted{border-color:var(--green);background:rgba(88,235,129,.15);
+                    color:var(--green);animation:popIn .3s ease;}
+    .waiting-box{background:rgba(161,135,255,.08);border:1.5px solid var(--purple);
+                 border-radius:16px;padding:20px;text-align:center;margin-bottom:14px;}
+    .waiting-box h3{font-size:1.1rem;color:var(--purple);margin-bottom:6px;}
+    .waiting-box p{font-size:.82rem;color:var(--grey);margin-bottom:12px;}
+    .progress-wrap{background:var(--border);border-radius:5px;height:6px;margin:10px 0;overflow:hidden;}
+    .progress-fill{height:100%;border-radius:5px;background:var(--purple);width:0%;transition:width .4s ease;}
+    .wait-count{font-size:.8rem;color:var(--grey);margin-top:4px;}
+    .session-hint{margin-top:14px;font-size:.76rem;color:var(--border);text-align:center;}
+    .session-hint span{color:var(--teal);font-weight:700;letter-spacing:3px;font-family:monospace;}
+    .result-divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
+    .result-title{font-size:.88rem;font-weight:700;color:var(--teal);text-align:center;margin-bottom:12px;}
+    .order-list{list-style:none;}
+    .order-item{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:12px;
+                margin-bottom:7px;background:var(--card2);border:1.5px solid var(--border);
+                font-size:.93rem;font-weight:600;color:var(--white);animation:slideIn .4s ease forwards;}
+    @keyframes slideIn{from{opacity:0;transform:translateX(-16px);}to{opacity:1;transform:translateX(0);}}
+    @keyframes popIn{0%{transform:scale(.88);opacity:.4;}60%{transform:scale(1.04);}100%{transform:scale(1);opacity:1;}}
+    .order-num{width:27px;height:27px;border-radius:50%;background:var(--purple);color:#111;
+               font-size:.78rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .order-name{flex:1;}
+    .vote-count-badge{font-size:.74rem;font-weight:700;color:var(--yellow);
+                      background:rgba(255,243,71,.1);border:1px solid rgba(255,243,71,.3);
+                      border-radius:8px;padding:3px 8px;white-space:nowrap;}
+    .tie-badge{font-size:.7rem;color:var(--gold);margin-left:3px;}
+    .setup-box{background:rgba(255,155,252,.07);border:1.5px solid var(--pink);
+               border-radius:16px;padding:18px;margin-bottom:14px;}
+    .setup-box h3{color:var(--pink);font-size:.95rem;margin-bottom:10px;}
+    .setup-step{font-size:.82rem;color:var(--grey);margin-bottom:10px;line-height:1.55;}
+    .setup-step strong{color:var(--white);}
+    .code-snippet{background:#111;border:1px solid var(--border);border-radius:6px;
+                  padding:8px 10px;font-family:monospace;font-size:.72rem;color:var(--teal);
+                  margin:5px 0;white-space:pre-wrap;word-break:break-all;text-align:left;}
+    .screen{display:none;}
+    .screen.active{display:block;}
+    footer{margin-top:22px;font-size:.72rem;color:var(--border);text-align:center;}
+  </style>
+</head>
+<body>
+  <h1>&#127897; Talk Order Generator</h1>
+  <p class='subtitle'>Guided by Elmo &nbsp;&#8226;&nbsp; ADC Consulting</p>
+
+  <div class='elmo-wrapper'>
+    <div class='speech-bubble' id='speechBubble'>Loading...</div>
+    <img class='elmo-img' id='elmoImg'
+      src='https://pngimg.com/uploads/elmo/elmo_PNG90502.png' alt='Elmo'/>
+  </div>
+
+  <div class='card'>
+
+    <!-- SCREEN: setup -->
+    <div class='screen' id='screenSetup'>
+      <div class='setup-box'>
+        <h3>&#9881;&#65039; One-time Firebase setup</h3>
+        <div class='setup-step'><strong>1.</strong> Go to <strong>console.firebase.google.com</strong>, create a free project.</div>
+        <div class='setup-step'><strong>2.</strong> Click <strong>Realtime Database</strong> &rarr; Create database &rarr; choose any region &rarr; start in <strong>test mode</strong>.</div>
+        <div class='setup-step'><strong>3.</strong> Click the &#9881; icon &rarr; <strong>Project settings</strong> &rarr; <em>Your apps</em> &rarr; add a <strong>Web app</strong>. Copy the <code>firebaseConfig</code> object.</div>
+        <div class='setup-step'><strong>4.</strong> Open this HTML file and replace the placeholder values in the <code>FIREBASE_CONFIG</code> block near the top of the &lt;script&gt;.</div>
+        <div class='code-snippet'>const FIREBASE_CONFIG = {
+  apiKey:            'YOUR_API_KEY',
+  authDomain:        'YOUR_PROJECT.firebaseapp.com',
+  databaseURL:       'https://YOUR_PROJECT-default-rtdb.firebaseio.com',
+  projectId:         'YOUR_PROJECT',
+  storageBucket:     'YOUR_PROJECT.appspot.com',
+  messagingSenderId: 'YOUR_SENDER_ID',
+  appId:             'YOUR_APP_ID'
+};</div>
+        <div class='setup-step'><strong>5.</strong> Push the updated file to GitHub &mdash; done! Everyone uses the same URL.</div>
+      </div>
+    </div>
+
+    <!-- SCREEN: home -->
+    <div class='screen' id='screenHome'>
+      <div class='card-title'>Who is in the meeting? &#128075;</div>
+      <div class='select-row'>
+        <button class='btn-tiny' onclick='selectAll()'>Select all</button>
+        <button class='btn-tiny' onclick='deselectAll()'>Clear</button>
+        <span class='counter-label' id='counterLabel'>0 selected</span>
+      </div>
+      <div class='members-grid' id='membersGrid'></div>
+      <div class='btn-row'>
+        <button class='btn btn-yellow' id='createSessionBtn' onclick='createSession()' disabled>
+          &#127922; Create voting session
+        </button>
+      </div>
+      <div style='text-align:center;margin-top:6px;'>
+        <button class='btn-tiny' onclick='showScreen("screenJoin");say(MSG_JOIN);bounceElmo();'>
+          Already have a session code? Join here
+        </button>
+      </div>
+    </div>
+
+    <!-- SCREEN: share -->
+    <div class='screen' id='screenShare'>
+      <div class='share-box'>
+        <div class='share-label'>Share this code or QR with everyone</div>
+        <div class='session-code' id='displayCode'>------</div>
+        <img class='qr-img' id='qrImg' src='' alt='QR code'/>
+        <div class='copy-row'>
+          <input class='copy-input' id='shareUrl' readonly/>
+          <button class='copy-btn' id='copyBtn' onclick='copyLink()'>Copy link</button>
+        </div>
+      </div>
+      <div class='btn-row'>
+        <button class='btn btn-teal' onclick='goToVote()'>
+          &#128073; I'm ready &mdash; cast my vote
+        </button>
+      </div>
+      <div class='btn-row'>
+        <button class='btn btn-secondary' onclick='cancelSession()'>&#8592; Cancel &amp; start over</button>
+      </div>
+    </div>
+
+    <!-- SCREEN: join -->
+    <div class='screen' id='screenJoin'>
+      <div class='join-box'>
+        <p>Enter the session code shown on the host's screen.</p>
+        <input class='code-input' id='codeInput' maxlength='6' placeholder='ABC123'
+          oninput='this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,"")' />
+        <div class='btn-row'>
+          <button class='btn btn-yellow' onclick='joinByCode()'>&#128229; Join</button>
+          <button class='btn btn-secondary' onclick='showScreen("screenHome");say(MSG_HOME);'>&#8592; Back</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCREEN: vote -->
+    <div class='screen' id='screenVote'>
+      <div class='anon-badge'>&#128274; Your vote is anonymous</div>
+      <div class='card-title'>Who should go first?</div>
+      <div class='vote-grid' id='voteGrid'></div>
+    </div>
+
+    <!-- SCREEN: waiting -->
+    <div class='screen' id='screenWaiting'>
+      <div class='waiting-box'>
+        <h3>&#128274; Vote recorded!</h3>
+        <p>Waiting for everyone to vote&hellip;</p>
+        <div class='progress-wrap'><div class='progress-fill' id='waitProgress'></div></div>
+        <div class='wait-count' id='waitCount'>0 of 0 voted</div>
+      </div>
+      <div class='session-hint'>Session code: <span id='waitCode'></span></div>
+    </div>
+
+    <!-- SCREEN: results -->
+    <div class='screen' id='screenResults'>
+      <hr class='result-divider'/>
+      <div class='result-title'>&#127897; Talk order by votes</div>
+      <ol class='order-list' id='orderList'></ol>
+      <div class='btn-row' style='margin-top:12px;'>
+        <button class='btn btn-secondary' onclick='fullReset()'>&#8635; New session</button>
+      </div>
+    </div>
+
+  </div>
+  <footer>Made with &#10084; for ADC Consulting</footer>
+
+  <script>
+  /* =====================================================================
+     FIREBASE CONFIG  –  replace these values after creating your project
+     ===================================================================== */
+  const FIREBASE_CONFIG = {
+    apiKey:            'YOUR_API_KEY',
+    authDomain:        'YOUR_PROJECT.firebaseapp.com',
+    databaseURL:       'https://YOUR_PROJECT-default-rtdb.firebaseio.com',
+    projectId:         'YOUR_PROJECT',
+    storageBucket:     'YOUR_PROJECT.appspot.com',
+    messagingSenderId: 'YOUR_SENDER_ID',
+    appId:             'YOUR_APP_ID'
+  };
+  /* ===================================================================== */
+
+  var MEMBERS = ['Alinda','Elianne','Lisette','Harm','Jochem','Laurent','Timon'];
+
+  var MSG_HOME    = 'Hi there! Select who is in the meeting, then create a voting session! &#127881;';
+  var MSG_PICK    = 'Elmo loves __N__! Keep picking! &#128400;';
+  var MSG_READY   = '__C__ friends! Create the session and share the code! &#127922;';
+  var MSG_SHARE   = 'Share that code or QR with everyone - online AND in the room! &#128241;';
+  var MSG_JOIN    = 'Got a code? Type it in and join the vote! &#128229;';
+  var MSG_VOTE    = 'Elmo will not tell anyone - pick who should go FIRST! &#129325;';
+  var MSG_WAIT    = 'Vote locked in! Elmo is waiting for everyone else... &#129300;';
+  var MSG_RESULTS = 'The votes are in! Democracy at work! &#127882;';
+  var MSG_RESET   = 'Starting fresh! &#127775;';
+
+  var selected    = {};
+  var sessionCode = null;
+  var db          = null;
+  var hasVoted    = false;
+
+  function init() {
+    var cfg = FIREBASE_CONFIG;
+    if (cfg.apiKey === 'YOUR_API_KEY' || cfg.databaseURL.indexOf('YOUR_PROJECT') !== -1) {
+      showScreen('screenSetup');
+      say('Elmo needs a Firebase setup first! Follow the steps below. &#9881;&#65039;');
+      return;
+    }
+    firebase.initializeApp(cfg);
+    db = firebase.database();
+    var params      = new URLSearchParams(window.location.search);
+    var codeFromUrl = params.get('session');
+    if (codeFromUrl) {
+      sessionCode = codeFromUrl.toUpperCase();
+      loadSessionAndVote(sessionCode);
+    } else {
+      buildGrid(); updateHomeUI();
+      showScreen('screenHome'); say(MSG_HOME); bounceElmo();
+    }
+  }
+
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
+    document.getElementById(id).classList.add('active');
+  }
+
+  function buildGrid() {
+    var grid = document.getElementById('membersGrid');
+    grid.innerHTML = '';
+    MEMBERS.forEach(function(name) {
+      var btn = document.createElement('button');
+      btn.className = 'member-btn' + (selected[name] ? ' selected' : '');
+      btn.id = 'mbtn-' + name;
+      btn.onclick = (function(n){ return function(){ toggleMember(n); }; })(name);
+      var av = document.createElement('div'); av.className = 'avatar';
+      av.textContent = name.slice(0,2).toUpperCase();
+      var ns = document.createElement('span'); ns.textContent = name;
+      var cs = document.createElement('span'); cs.className = 'checkmark'; cs.textContent = '✓';
+      btn.appendChild(av); btn.appendChild(ns); btn.appendChild(cs);
+      grid.appendChild(btn);
+    });
+  }
+
+  function toggleMember(name) {
+    if (selected[name]) { delete selected[name]; }
+    else { selected[name] = true; say(MSG_PICK.replace('__N__', name)); bounceElmo(); }
+    updateHomeUI();
+  }
+  function selectAll() {
+    MEMBERS.forEach(function(m){ selected[m] = true; });
+    updateHomeUI(); say(MSG_READY.replace('__C__', MEMBERS.length)); bounceElmo();
+  }
+  function deselectAll() { selected = {}; updateHomeUI(); say(MSG_HOME); }
+  function countSelected() { return Object.keys(selected).length; }
+  function updateHomeUI() {
+    var count = countSelected();
+    MEMBERS.forEach(function(name) {
+      var b = document.getElementById('mbtn-' + name);
+      if (b) b.className = 'member-btn' + (selected[name] ? ' selected' : '');
+    });
+    document.getElementById('counterLabel').textContent = count + ' selected';
+    document.getElementById('createSessionBtn').disabled = (count < 2);
+    if (count >= 2) say(MSG_READY.replace('__C__', count));
+    else if (count === 0) say(MSG_HOME);
+  }
+
+  function makeCode() {
+    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    var code = '';
+    for (var i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  }
+
+  function createSession() {
+    var attendees = Object.keys(selected);
+    if (attendees.length < 2) return;
+    sessionCode = makeCode();
+    hasVoted = false;
+    var voteData = {};
+    attendees.forEach(function(n){ voteData[n] = { count: 0, firstTime: 0 }; });
+    db.ref('sessions/' + sessionCode).set({
+      attendees: attendees, totalVoters: attendees.length,
+      votesCast: 0, votes: voteData, status: 'open', createdAt: Date.now()
+    }, function(err) {
+      if (err) { alert('Firebase error: ' + err.message); return; }
+      showShareScreen();
+    });
+  }
+
+  function showShareScreen() {
+    document.getElementById('displayCode').textContent = sessionCode;
+    var url = window.location.origin + window.location.pathname + '?session=' + sessionCode;
+    document.getElementById('shareUrl').value = url;
+    document.getElementById('qrImg').src =
+      'https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=2BEBCB&bgcolor=2D2D2D&data='
+      + encodeURIComponent(url);
+    showScreen('screenShare'); say(MSG_SHARE); bounceElmo();
+  }
+
+  function copyLink() {
+    var input = document.getElementById('shareUrl');
+    input.select(); input.setSelectionRange(0, 9999);
+    try { document.execCommand('copy'); }
+    catch(e) { navigator.clipboard && navigator.clipboard.writeText(input.value); }
+    var btn = document.getElementById('copyBtn');
+    btn.textContent = 'Copied!';
+    setTimeout(function(){ btn.textContent = 'Copy link'; }, 2000);
+  }
+
+  function goToVote() { loadSessionAndVote(sessionCode); }
+
+  function cancelSession() {
+    if (sessionCode) db.ref('sessions/' + sessionCode).remove();
+    sessionCode = null; selected = {};
+    buildGrid(); updateHomeUI();
+    showScreen('screenHome'); say(MSG_HOME);
+  }
+
+  function joinByCode() {
+    var code = document.getElementById('codeInput').value.trim().toUpperCase();
+    if (code.length !== 6) { say('Please enter all 6 characters! &#128533;'); return; }
+    sessionCode = code;
+    loadSessionAndVote(code);
+  }
+
+  function loadSessionAndVote(code) {
+    db.ref('sessions/' + code).once('value', function(snap) {
+      var data = snap.val();
+      if (!data) {
+        say('Hmm, Elmo cannot find that session! Check the code. &#128533;');
+        showScreen('screenJoin'); return;
+      }
+      if (data.status === 'closed') { renderResults(data); return; }
+      if (localStorage.getItem('voted_' + code) === 'yes') {
+        showWaiting(code, data.votesCast, data.totalVoters); return;
+      }
+      buildVoteGrid(data.attendees, code);
+      showScreen('screenVote'); say(MSG_VOTE); bounceElmo();
+    });
+  }
+
+  function buildVoteGrid(attendees, code) {
+    var grid = document.getElementById('voteGrid');
+    grid.innerHTML = '';
+    attendees.forEach(function(name) {
+      var btn = document.createElement('button');
+      btn.className = 'vote-btn'; btn.textContent = name;
+      btn.onclick = (function(n, b){ return function(){ castVote(n, b, code); }; })(name, btn);
+      grid.appendChild(btn);
+    });
+  }
+
+  function castVote(name, btn, code) {
+    document.querySelectorAll('.vote-btn').forEach(function(b){ b.disabled = true; });
+    btn.classList.add('voted');
+    var now = Date.now();
+    db.ref('sessions/' + code).transaction(function(current) {
+      if (!current) return current;
+      if (!current.votes[name]) current.votes[name] = { count: 0, firstTime: 0 };
+      current.votes[name].count += 1;
+      if (!current.votes[name].firstTime) current.votes[name].firstTime = now;
+      current.votesCast = (current.votesCast || 0) + 1;
+      if (current.votesCast >= current.totalVoters) current.status = 'closed';
+      return current;
+    }, function(err, committed, snap) {
+      if (err) { alert('Vote error: ' + err.message); return; }
+      localStorage.setItem('voted_' + code, 'yes');
+      hasVoted = true;
+      var data = snap.val();
+      if (data.status === 'closed') { renderResults(data); }
+      else { showWaiting(code, data.votesCast, data.totalVoters); }
+    });
+  }
+
+  function showWaiting(code, cast, total) {
+    document.getElementById('waitCode').textContent = code;
+    updateWaitProgress(cast, total);
+    showScreen('screenWaiting'); say(MSG_WAIT); bounceElmo();
+    var ref = db.ref('sessions/' + code);
+    var listener = ref.on('value', function(snap) {
+      var data = snap.val(); if (!data) return;
+      updateWaitProgress(data.votesCast, data.totalVoters);
+      if (data.status === 'closed') { ref.off('value', listener); renderResults(data); }
+    });
+  }
+
+  function updateWaitProgress(cast, total) {
+    var pct = total > 0 ? Math.round((cast / total) * 100) : 0;
+    document.getElementById('waitProgress').style.width = pct + '%';
+    document.getElementById('waitCount').textContent = cast + ' of ' + total + ' voted';
+  }
+
+  function renderResults(data) {
+    var attendees = data.attendees;
+    var votes     = data.votes;
+    var sorted = attendees.slice().sort(function(a, b) {
+      var ca = votes[a] ? votes[a].count : 0;
+      var cb = votes[b] ? votes[b].count : 0;
+      if (cb !== ca) return cb - ca;
+      var ta = votes[a] ? votes[a].firstTime : 0;
+      var tb = votes[b] ? votes[b].firstTime : 0;
+      return ta - tb;
+    });
+    var list = document.getElementById('orderList');
+    list.innerHTML = '';
+    sorted.forEach(function(name, i) {
+      var vc   = votes[name] ? votes[name].count : 0;
+      var prev = i > 0 && votes[sorted[i-1]] ? votes[sorted[i-1]].count : -1;
+      var isTie = (i > 0 && vc === prev);
+      var li = document.createElement('li');
+      li.className = 'order-item';
+      li.style.animationDelay = (i * 0.08) + 's';
+      var nd = document.createElement('div'); nd.className = 'order-num'; nd.textContent = '' + (i+1);
+      var ns = document.createElement('span'); ns.className = 'order-name'; ns.textContent = name;
+      var vb = document.createElement('span'); vb.className = 'vote-count-badge';
+      vb.textContent = vc + (vc === 1 ? ' vote' : ' votes');
+      li.appendChild(nd); li.appendChild(ns); li.appendChild(vb);
+      if (isTie) {
+        var tb = document.createElement('span');
+        tb.className = 'tie-badge'; tb.textContent = '(tie ⏱)';
+        li.appendChild(tb);
+      }
+      list.appendChild(li);
+    });
+    showScreen('screenResults'); say(MSG_RESULTS); celebrateElmo();
+    setTimeout(function(){ stopCelebrate(); }, 2500);
+  }
+
+  function fullReset() {
+    sessionCode = null; selected = {}; hasVoted = false;
+    window.history.replaceState({}, '', window.location.pathname);
+    buildGrid(); updateHomeUI();
+    showScreen('screenHome'); say(MSG_RESET); bounceElmo();
+  }
+
+  function say(msg) {
+    var b = document.getElementById('speechBubble');
+    b.style.opacity = '0';
+    setTimeout(function(){ b.innerHTML = msg; b.style.opacity = '1'; }, 140);
+  }
+  function bounceElmo() {
+    var el = document.getElementById('elmoImg');
+    el.classList.remove('bounce','celebrate'); void el.offsetWidth;
+    el.classList.add('bounce');
+    el.addEventListener('animationend', function(){ el.classList.remove('bounce'); }, { once: true });
+  }
+  function celebrateElmo() {
+    var el = document.getElementById('elmoImg');
+    el.classList.remove('bounce'); el.classList.add('celebrate');
+  }
+  function stopCelebrate() { document.getElementById('elmoImg').classList.remove('celebrate'); }
+
+  window.addEventListener('load', init);
+  </script>
+</body>
+</html>
