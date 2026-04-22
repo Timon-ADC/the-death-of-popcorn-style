@@ -1,13 +1,22 @@
-/* ADC template colour palette + Elmo red accent */
+/* ============================================
+   ADC Brand Colour Palette
+   Based on the ADC PPT Guidelines:
+   - Copper is the primary accent (for headlines & highlights)
+   - ADC Dark Blue for secondary accents
+   - ADC Light Green for supporting accents
+   - Black body text on white backgrounds
+   - Light Grey for subtle borders/backgrounds
+   ============================================ */
 :root {
-    --adc-orange: #F28C28;
-    --adc-yellow: #F5B63D;
-    --adc-dark: #1A1A1A;
-    --adc-light-grey: #E8E8E8;
-    --adc-bg: #FDF6EC;
-    --elmo-red: #E83D2F;
-    --elmo-orange: #F47B20;
-    --white: #FFFFFF;
+    --adc-copper: #B87333;
+    --adc-copper-dark: #9A5F27;
+    --adc-copper-light: #E8C9A3;
+    --adc-dark-blue: #1B2A4E;
+    --adc-light-green: #A8C98A;
+    --adc-light-grey: #E5E5E5;
+    --adc-bg-grey: #F5F5F3;
+    --adc-black: #000000;
+    --adc-white: #FFFFFF;
 }
 
 * {
@@ -17,9 +26,9 @@
 }
 
 body {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-    background: var(--adc-bg);
-    color: var(--adc-dark);
+    font-family: 'Helvetica Neue', 'Arial', sans-serif;
+    background: var(--adc-white);
+    color: var(--adc-black);
     min-height: 100vh;
     line-height: 1.4;
 }
@@ -33,21 +42,22 @@ body {
 header {
     text-align: center;
     margin-bottom: 2rem;
-    border-bottom: 2px solid var(--adc-orange);
+    border-bottom: 2px solid var(--adc-copper);
     padding-bottom: 1.5rem;
 }
 
 header h1 {
     font-size: 2rem;
-    color: var(--adc-dark);
+    color: var(--adc-copper);
     letter-spacing: -1px;
+    font-weight: 500;
 }
 
 .subtitle {
-    color: var(--adc-orange);
+    color: var(--adc-dark-blue);
     font-size: 1.1rem;
     margin-top: 0.25rem;
-    font-weight: 600;
+    font-weight: 500;
 }
 
 /* Elmo guide */
@@ -56,56 +66,61 @@ header h1 {
     align-items: flex-start;
     gap: 1rem;
     margin-bottom: 2rem;
-    background: var(--white);
+    background: var(--adc-bg-grey);
     padding: 1.25rem;
-    border-radius: 16px;
-    border: 2px solid var(--adc-light-grey);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    border-radius: 8px;
+    border: 1px solid var(--adc-light-grey);
 }
 
 #elmo-img {
-    width: 110px;
-    height: 110px;
-    object-fit: contain;
+    width: 130px;
+    height: 160px;
+    object-fit: cover;
     flex-shrink: 0;
+    border-radius: 6px;
+    background: var(--adc-white);
+    border: 1px solid var(--adc-light-grey);
 }
 
 .speech-bubble {
     position: relative;
-    background: var(--elmo-red);
-    color: var(--white);
+    background: var(--adc-white);
+    color: var(--adc-black);
     padding: 1rem 1.25rem;
-    border-radius: 16px;
+    border-radius: 8px;
     flex: 1;
     min-height: 80px;
     display: flex;
     align-items: center;
+    border: 1px solid var(--adc-light-grey);
+    border-left: 3px solid var(--adc-copper);
 }
 
 .speech-bubble::before {
     content: '';
     position: absolute;
-    left: -10px;
+    left: -8px;
     top: 30px;
     width: 0;
     height: 0;
-    border-top: 10px solid transparent;
-    border-bottom: 10px solid transparent;
-    border-right: 12px solid var(--elmo-red);
+    border-top: 8px solid transparent;
+    border-bottom: 8px solid transparent;
+    border-right: 10px solid var(--adc-copper);
 }
 
 .speech-bubble p {
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 400;
+    color: var(--adc-black);
 }
 
 /* Steps */
 .step {
     display: none;
-    background: var(--white);
+    background: var(--adc-white);
     padding: 2rem;
-    border-radius: 16px;
-    border: 2px solid var(--adc-light-grey);
+    border-radius: 8px;
+    border: 1px solid var(--adc-light-grey);
     animation: fadeIn 0.3s ease;
 }
 
@@ -119,15 +134,17 @@ header h1 {
 }
 
 .step h2 {
-    color: var(--adc-dark);
+    color: var(--adc-copper);
     margin-bottom: 0.5rem;
     font-size: 1.4rem;
+    font-weight: 500;
 }
 
 .hint {
-    color: #666;
+    color: var(--adc-dark-blue);
     margin-bottom: 1.25rem;
     font-size: 0.95rem;
+    font-style: italic;
 }
 
 /* Participants checkboxes */
@@ -139,12 +156,13 @@ header h1 {
 }
 
 .participant-item {
-    background: var(--adc-bg);
-    border: 2px solid var(--adc-light-grey);
-    border-radius: 12px;
+    background: var(--adc-white);
+    border: 1px solid var(--adc-light-grey);
+    border-radius: 6px;
     padding: 0.85rem 1rem;
     cursor: pointer;
-    font-weight: 500;
+    font-weight: 400;
+    color: var(--adc-black);
     transition: all 0.15s ease;
     display: flex;
     align-items: center;
@@ -153,42 +171,45 @@ header h1 {
 }
 
 .participant-item:hover {
-    border-color: var(--adc-orange);
+    border-color: var(--adc-copper);
+    background: var(--adc-bg-grey);
 }
 
 .participant-item.selected {
-    background: var(--adc-yellow);
-    border-color: var(--adc-orange);
-    color: var(--adc-dark);
+    background: var(--adc-copper-light);
+    border-color: var(--adc-copper);
+    color: var(--adc-black);
+    font-weight: 500;
 }
 
 .participant-item input {
     width: 18px;
     height: 18px;
-    accent-color: var(--adc-orange);
+    accent-color: var(--adc-copper);
 }
 
 /* Question card */
 .question-card {
-    background: linear-gradient(135deg, var(--adc-orange), var(--adc-yellow));
-    color: var(--white);
+    background: var(--adc-dark-blue);
+    color: var(--adc-white);
     padding: 2rem 1.5rem;
-    border-radius: 14px;
+    border-radius: 8px;
     text-align: center;
     margin-bottom: 1.5rem;
     font-size: 1.3rem;
-    font-weight: 600;
+    font-weight: 500;
     min-height: 120px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-left: 4px solid var(--adc-copper);
 }
 
 /* Answers */
 .answers-list {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 0.6rem;
     margin-bottom: 1.5rem;
 }
 
@@ -197,29 +218,33 @@ header h1 {
     align-items: center;
     gap: 1rem;
     padding: 0.75rem 1rem;
-    background: var(--adc-bg);
-    border-radius: 10px;
-    border: 2px solid var(--adc-light-grey);
+    background: var(--adc-bg-grey);
+    border-radius: 6px;
+    border: 1px solid var(--adc-light-grey);
 }
 
 .answer-row label {
     flex: 1;
-    font-weight: 600;
+    font-weight: 500;
+    color: var(--adc-black);
 }
 
 .answer-row input {
     width: 110px;
     padding: 0.55rem 0.75rem;
-    border: 2px solid var(--adc-light-grey);
-    border-radius: 8px;
+    border: 1px solid var(--adc-light-grey);
+    border-radius: 4px;
     font-size: 1rem;
-    background: var(--white);
+    background: var(--adc-white);
+    color: var(--adc-black);
     text-align: right;
+    font-family: inherit;
 }
 
 .answer-row input:focus {
     outline: none;
-    border-color: var(--adc-orange);
+    border-color: var(--adc-copper);
+    box-shadow: 0 0 0 2px var(--adc-copper-light);
 }
 
 /* Results */
@@ -235,18 +260,19 @@ header h1 {
     align-items: center;
     gap: 1rem;
     padding: 1rem 1.25rem;
-    background: var(--adc-bg);
-    border-radius: 10px;
-    margin-bottom: 0.6rem;
-    border-left: 4px solid var(--adc-light-grey);
+    background: var(--adc-bg-grey);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    border-left: 3px solid var(--adc-light-grey);
     font-size: 1.05rem;
+    color: var(--adc-black);
 }
 
 .result-list li::before {
     content: counter(rank);
-    background: var(--adc-orange);
-    color: var(--white);
-    font-weight: 700;
+    background: var(--adc-dark-blue);
+    color: var(--adc-white);
+    font-weight: 500;
     width: 32px;
     height: 32px;
     border-radius: 50%;
@@ -258,36 +284,45 @@ header h1 {
 }
 
 .result-list li:first-child {
-    border-left-color: var(--adc-orange);
-    background: linear-gradient(90deg, #FFF3E0, var(--adc-bg));
+    border-left-color: var(--adc-copper);
+    background: var(--adc-copper-light);
+}
+
+.result-list li:first-child::before {
+    background: var(--adc-copper);
+}
+
+.result-list li:nth-child(2) {
+    border-left-color: var(--adc-light-green);
 }
 
 .result-list .answer-value {
-    color: #888;
+    color: var(--adc-dark-blue);
     font-size: 0.9rem;
     margin-left: auto;
+    font-style: italic;
 }
 
 /* Buttons */
 .btn {
-    padding: 0.85rem 1.75rem;
+    padding: 0.75rem 1.5rem;
     border: none;
-    border-radius: 10px;
-    font-size: 1rem;
-    font-weight: 600;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.15s ease;
     font-family: inherit;
+    letter-spacing: 0.3px;
 }
 
 .btn-primary {
-    background: var(--adc-orange);
-    color: var(--white);
+    background: var(--adc-copper);
+    color: var(--adc-white);
 }
 
 .btn-primary:hover:not(:disabled) {
-    background: #D97A1E;
-    transform: translateY(-1px);
+    background: var(--adc-copper-dark);
 }
 
 .btn-primary:disabled {
@@ -297,13 +332,13 @@ header h1 {
 }
 
 .btn-secondary {
-    background: var(--white);
-    color: var(--adc-orange);
-    border: 2px solid var(--adc-orange);
+    background: var(--adc-white);
+    color: var(--adc-copper);
+    border: 1px solid var(--adc-copper);
 }
 
 .btn-secondary:hover {
-    background: var(--adc-bg);
+    background: var(--adc-copper-light);
 }
 
 .button-row {
@@ -315,8 +350,9 @@ header h1 {
 footer {
     text-align: center;
     margin-top: 2.5rem;
-    color: #888;
+    color: var(--adc-dark-blue);
     font-size: 0.85rem;
+    font-style: italic;
 }
 
 /* Mobile */
@@ -325,7 +361,7 @@ footer {
     header h1 { font-size: 1.5rem; }
     .elmo-guide { flex-direction: column; align-items: center; text-align: center; }
     .speech-bubble::before { display: none; }
-    #elmo-img { width: 90px; height: 90px; }
+    #elmo-img { width: 120px; height: 150px; }
     .step { padding: 1.25rem; }
     .question-card { font-size: 1.1rem; padding: 1.5rem 1rem; }
     .answer-row input { width: 90px; }
