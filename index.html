@@ -1,623 +1,73 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="nl">
 <head>
-  <meta charset='UTF-8'/>
-  <meta name='viewport' content='width=device-width,initial-scale=1.0'/>
-  <title>ADC Talk Order Generator</title>
-  <script src='https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js'></script>
-  <script src='https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js'></script>
-  <style>
-    :root{
-      --bg:#1A1A1A;--card:#2D2D2D;--card2:#383838;--border:#444;
-      --purple:#A187FF;--teal:#2BEBCB;--green:#58EB81;
-      --yellow:#FFF347;--gold:#E5C574;--white:#FFF;--grey:#ADADAD;--pink:#FF9BFC;
-    }
-    *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Segoe UI',sans-serif;background:var(--bg);min-height:100vh;
-         display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px;color:var(--white);}
-    h1{font-size:1.5rem;color:var(--purple);margin-bottom:4px;text-align:center;letter-spacing:1px;font-weight:800;}
-    .subtitle{font-size:.82rem;color:var(--grey);text-align:center;margin-bottom:18px;}
-    .elmo-wrapper{display:flex;flex-direction:column;align-items:center;margin-bottom:14px;}
-    .speech-bubble{background:var(--card);border:2px solid var(--purple);border-radius:16px;
-      padding:11px 16px;max-width:290px;font-size:.88rem;color:var(--white);text-align:center;
-      position:relative;margin-bottom:10px;line-height:1.45;min-height:50px;transition:opacity .15s;}
-    .speech-bubble::after{content:'';position:absolute;bottom:-13px;left:50%;transform:translateX(-50%);
-      border:7px solid transparent;border-top-color:var(--purple);}
-    .speech-bubble::before{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);
-      border:6px solid transparent;border-top-color:var(--card);z-index:1;}
-    .elmo-img{width:110px;height:110px;object-fit:contain;filter:drop-shadow(0 4px 14px rgba(161,135,255,.4));}
-    .elmo-img.bounce{animation:bounce .55s ease;}
-    .elmo-img.celebrate{animation:celebrate .72s ease infinite;}
-    @keyframes bounce{0%{transform:translateY(0) rotate(0);}28%{transform:translateY(-18px) rotate(-7deg);}
-      58%{transform:translateY(-6px) rotate(6deg);}100%{transform:translateY(0) rotate(0);}}
-    @keyframes celebrate{0%{transform:translateY(0) rotate(-8deg) scale(1);}
-      50%{transform:translateY(-14px) rotate(8deg) scale(1.08);}100%{transform:translateY(0) rotate(-8deg) scale(1);}}
-    .card{background:var(--card);border-radius:20px;border:1px solid var(--border);padding:22px 18px;width:100%;max-width:420px;}
-    .card-title{font-size:.95rem;font-weight:700;color:var(--teal);margin-bottom:12px;text-align:center;}
-    .members-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;}
-    .member-btn{display:flex;align-items:center;gap:8px;padding:9px 11px;border-radius:12px;
-      border:2px solid var(--border);background:var(--card2);cursor:pointer;font-size:.88rem;
-      font-weight:500;color:var(--grey);transition:all .18s;user-select:none;width:100%;}
-    .member-btn.selected{border-color:var(--purple);background:rgba(161,135,255,.13);color:var(--white);}
-    .avatar{width:30px;height:30px;border-radius:50%;background:var(--border);display:flex;
-      align-items:center;justify-content:center;font-size:.74rem;font-weight:700;color:var(--grey);flex-shrink:0;transition:all .18s;}
-    .member-btn.selected .avatar{background:var(--purple);color:#111;}
-    .checkmark{margin-left:auto;opacity:0;color:var(--teal);transition:opacity .18s;}
-    .member-btn.selected .checkmark{opacity:1;}
-    .btn-row{display:flex;gap:9px;margin-bottom:9px;}
-    .btn{flex:1;padding:12px 8px;border-radius:12px;border:none;font-size:.92rem;font-weight:700;
-         cursor:pointer;transition:transform .13s,filter .13s;}
-    .btn:active{transform:scale(.95);}
-    .btn-yellow{background:var(--yellow);color:#111;}   .btn-yellow:hover{filter:brightness(1.08);}
-    .btn-teal{background:var(--teal);color:#111;}       .btn-teal:hover{filter:brightness(1.08);}
-    .btn-purple{background:var(--purple);color:#111;}   .btn-purple:hover{filter:brightness(1.08);}
-    .btn-green{background:var(--green);color:#111;}     .btn-green:hover{filter:brightness(1.08);}
-    .btn-secondary{background:var(--card2);color:var(--grey);border:1px solid var(--border);}
-    .btn-secondary:hover{background:#484848;color:var(--white);}
-    .btn:disabled{opacity:.3;cursor:not-allowed;transform:none!important;filter:none!important;}
-    .select-row{display:flex;gap:8px;margin-bottom:12px;align-items:center;}
-    .btn-tiny{padding:5px 10px;border-radius:8px;border:1px solid var(--border);font-size:.76rem;
-              font-weight:600;cursor:pointer;background:var(--card2);color:var(--grey);transition:all .13s;}
-    .btn-tiny:hover{background:#484848;color:var(--white);}
-    .counter-label{margin-left:auto;font-size:.76rem;color:var(--grey);}
-    .share-box{background:rgba(43,235,203,.07);border:1.5px solid var(--teal);
-               border-radius:16px;padding:18px;text-align:center;margin-bottom:14px;}
-    .session-code{font-family:monospace;font-size:2.4rem;font-weight:900;color:var(--teal);letter-spacing:6px;margin:6px 0;}
-    .share-label{font-size:.76rem;color:var(--grey);margin-bottom:6px;}
-    .qr-img{width:160px;height:160px;border-radius:10px;margin:10px auto;display:block;border:3px solid var(--teal);}
-    .copy-row{display:flex;gap:8px;margin-top:10px;}
-    .copy-input{flex:1;background:var(--card2);border:1px solid var(--border);border-radius:8px;
-                padding:7px 10px;font-size:.74rem;color:var(--grey);outline:none;}
-    .copy-btn{padding:7px 12px;border-radius:8px;border:none;background:var(--purple);color:#111;
-              font-size:.76rem;font-weight:700;cursor:pointer;white-space:nowrap;}
-    .copy-btn:hover{filter:brightness(1.1);}
-    .join-box{background:rgba(161,135,255,.08);border:1.5px solid var(--purple);
-              border-radius:16px;padding:18px;text-align:center;margin-bottom:14px;}
-    .join-box p{font-size:.82rem;color:var(--grey);margin-bottom:12px;}
-    .code-input{width:100%;background:var(--card2);border:2px solid var(--border);border-radius:10px;
-                padding:12px;font-size:1.6rem;font-weight:900;color:var(--teal);text-align:center;
-                letter-spacing:6px;font-family:monospace;outline:none;text-transform:uppercase;margin-bottom:10px;}
-    .code-input:focus{border-color:var(--purple);}
-    .week-chip{display:inline-block;background:rgba(255,243,71,.1);border:1px solid rgba(255,243,71,.4);
-               border-radius:20px;padding:3px 12px;font-size:.74rem;color:var(--yellow);font-weight:700;margin-bottom:10px;}
-    .question-box{background:rgba(161,135,255,.1);border:1.5px solid var(--purple);
-                  border-radius:14px;padding:16px;margin-bottom:16px;}
-    .question-text{font-size:1rem;font-weight:700;color:var(--white);line-height:1.45;text-align:center;}
-    .number-input{width:100%;background:var(--card2);border:2px solid var(--border);border-radius:12px;
-                  padding:14px;font-size:2rem;font-weight:900;color:var(--yellow);text-align:center;
-                  outline:none;margin:12px 0;font-family:monospace;}
-    .number-input:focus{border-color:var(--yellow);}
-    .number-input::placeholder{color:var(--border);}
-    .name-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:12px 0;}
-    .name-btn{padding:13px 8px;border-radius:12px;border:2px solid var(--border);
-              background:var(--card2);cursor:pointer;font-size:.95rem;font-weight:700;
-              color:var(--white);transition:all .18s;}
-    .name-btn:hover{border-color:var(--teal);background:rgba(43,235,203,.1);color:var(--teal);}
-    .name-btn.answered{border-color:var(--green);background:rgba(88,235,129,.1);
-                       color:var(--green);cursor:not-allowed;opacity:.6;}
-    .waiting-box{background:rgba(161,135,255,.08);border:1.5px solid var(--purple);
-                 border-radius:16px;padding:20px;text-align:center;margin-bottom:14px;}
-    .waiting-box h3{font-size:1.1rem;color:var(--purple);margin-bottom:6px;}
-    .waiting-box p{font-size:.82rem;color:var(--grey);margin-bottom:12px;}
-    .progress-wrap{background:var(--border);border-radius:5px;height:6px;margin:10px 0;overflow:hidden;}
-    .progress-fill{height:100%;border-radius:5px;background:var(--purple);width:0%;transition:width .4s;}
-    .wait-count{font-size:.8rem;color:var(--grey);margin-top:4px;}
-    .session-hint{margin-top:14px;font-size:.76rem;color:var(--border);text-align:center;}
-    .session-hint span{color:var(--teal);font-weight:700;letter-spacing:3px;font-family:monospace;}
-    .result-divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
-    .result-title{font-size:.88rem;font-weight:700;color:var(--teal);text-align:center;margin-bottom:8px;}
-    .sort-toggle{display:flex;gap:8px;margin-bottom:12px;}
-    .sort-btn{flex:1;padding:8px;border-radius:10px;border:1.5px solid var(--border);
-              background:var(--card2);color:var(--grey);font-size:.8rem;font-weight:700;cursor:pointer;transition:all .15s;}
-    .sort-btn.active{border-color:var(--teal);background:rgba(43,235,203,.12);color:var(--teal);}
-    .order-list{list-style:none;}
-    .order-item{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:12px;
-                margin-bottom:7px;background:var(--card2);border:1.5px solid var(--border);
-                font-size:.93rem;font-weight:600;color:var(--white);animation:slideIn .4s ease forwards;}
-    @keyframes slideIn{from{opacity:0;transform:translateX(-16px);}to{opacity:1;transform:translateX(0);}}
-    .order-num{width:27px;height:27px;border-radius:50%;background:var(--purple);color:#111;
-               font-size:.78rem;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-    .order-name{flex:1;}
-    .answer-badge{font-size:.78rem;font-weight:700;color:var(--yellow);background:rgba(255,243,71,.1);
-                  border:1px solid rgba(255,243,71,.3);border-radius:8px;padding:3px 9px;white-space:nowrap;}
-    .tie-badge{font-size:.7rem;color:var(--gold);margin-left:3px;}
-    .screen{display:none;} .screen.active{display:block;}
-    footer{margin-top:22px;font-size:.72rem;color:var(--border);text-align:center;}
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check-in Volgorde - Public & Society</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>&#127897; Talk Order Generator</h1>
-  <p class='subtitle'>Guided by Elmo &nbsp;&#8226;&nbsp; ADC Consulting</p>
-  <div class='elmo-wrapper'>
-    <div class='speech-bubble' id='speechBubble'>Loading...</div>
-    <img class='elmo-img' id='elmoImg'
-      src='https://pngimg.com/uploads/elmo/elmo_PNG90502.png' alt='Elmo'/>
-  </div>
-  <div class='card'>
+    <div class="container">
+        <header>
+            <h1>Public &amp; Society Check-in</h1>
+            <p class="subtitle">Wie mag er als eerste?</p>
+        </header>
 
-    <!-- HOME -->
-    <div class='screen' id='screenHome'>
-      <div class='card-title'>Who is in the meeting? &#128075;</div>
-      <div class='select-row'>
-        <button class='btn-tiny' onclick='selectAll()'>Select all</button>
-        <button class='btn-tiny' onclick='deselectAll()'>Clear</button>
-        <span class='counter-label' id='counterLabel'>0 selected</span>
-      </div>
-      <div class='members-grid' id='membersGrid'></div>
-      <div class='btn-row'>
-        <button class='btn btn-yellow' id='createBtn' onclick='createSession()' disabled>
-          &#127922; Create session
-        </button>
-      </div>
-      <div style='text-align:center;margin-top:6px;'>
-        <button class='btn-tiny' onclick='showScreen("screenJoin");say(MSG_JOIN);bounceElmo();'>
-          Have a session code? Join here
-        </button>
-      </div>
+        <main id="app">
+            <!-- Elmo guide -->
+            <div class="elmo-guide">
+                <img
+                    id="elmo-img"
+                    src="https://pngimg.com/d/elmo_PNG19.png"
+                    alt="Elmo"
+                    onerror="this.onerror=null;this.src='https://upload.wikimedia.org/wikipedia/en/7/7b/Elmo_from_Sesame_Street.gif';"
+                />
+                <div class="speech-bubble">
+                    <p id="elmo-text">Hoi hoi! Elmo is er klaar voor. Jullie ook, hopelijk.</p>
+                </div>
+            </div>
+
+            <!-- Step 1: Select participants -->
+            <section id="step-participants" class="step active">
+                <h2>Stap 1 — Wie is er vandaag?</h2>
+                <p class="hint">Vink aan wie er bij de meeting zit.</p>
+                <div id="participants-list" class="participants-list"></div>
+                <button id="to-question" class="btn btn-primary" disabled>Volgende</button>
+            </section>
+
+            <!-- Step 2: Show question -->
+            <section id="step-question" class="step">
+                <h2>Stap 2 — De vraag van deze week</h2>
+                <div class="question-card">
+                    <p id="question-text">...</p>
+                </div>
+                <div class="button-row">
+                    <button id="new-question" class="btn btn-secondary">Andere vraag</button>
+                    <button id="to-answers" class="btn btn-primary">Start invullen</button>
+                </div>
+            </section>
+
+            <!-- Step 3: Collect answers -->
+            <section id="step-answers" class="step">
+                <h2>Stap 3 — Antwoorden</h2>
+                <p class="hint" id="answer-question-label">...</p>
+                <div id="answers-list" class="answers-list"></div>
+                <button id="calculate" class="btn btn-primary">Bepaal de volgorde</button>
+            </section>
+
+            <!-- Step 4: Show result -->
+            <section id="step-result" class="step">
+                <h2>Stap 4 — De volgorde</h2>
+                <ol id="result-list" class="result-list"></ol>
+                <button id="restart" class="btn btn-secondary">Opnieuw beginnen</button>
+            </section>
+        </main>
+
+        <footer>
+            <p>Gemaakt voor het Public &amp; Society team</p>
+        </footer>
     </div>
 
-    <!-- SHARE -->
-    <div class='screen' id='screenShare'>
-      <div id='shareWeekChip' class='week-chip'></div>
-      <div class='share-box'>
-        <div class='share-label'>Share this with everyone &mdash; in the room and online</div>
-        <div class='session-code' id='displayCode'>------</div>
-        <img class='qr-img' id='qrImg' src='' alt='QR code'/>
-        <div class='copy-row'>
-          <input class='copy-input' id='shareUrl' readonly/>
-          <button class='copy-btn' id='copyBtn' onclick='copyLink()'>Copy link</button>
-        </div>
-      </div>
-      <div class='question-box'>
-        <div style='font-size:.74rem;color:var(--grey);margin-bottom:6px;'>This week&#39;s question:</div>
-        <div class='question-text' id='shareQuestion'></div>
-      </div>
-      <div class='btn-row'>
-        <button class='btn btn-teal' onclick='goToIdentify()'>
-          &#128073; I&#39;m ready &mdash; answer now
-        </button>
-      </div>
-      <div class='btn-row'>
-        <button class='btn btn-secondary' onclick='cancelSession()'>&#8592; Cancel</button>
-      </div>
-    </div>
-
-    <!-- JOIN -->
-    <div class='screen' id='screenJoin'>
-      <div class='join-box'>
-        <p>Enter the 6-character session code.</p>
-        <input class='code-input' id='codeInput' maxlength='6' placeholder='ABC123'
-          oninput='this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,"")' />
-        <div class='btn-row'>
-          <button class='btn btn-yellow' onclick='joinByCode()'>&#128229; Join</button>
-          <button class='btn btn-secondary' onclick='showScreen("screenHome");say(MSG_HOME);'>&#8592; Back</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- IDENTIFY -->
-    <div class='screen' id='screenIdentify'>
-      <div class='card-title'>Who are you? &#128073;</div>
-      <p style='font-size:.82rem;color:var(--grey);text-align:center;margin-bottom:10px;'>
-        Tap your own name to see the question.
-      </p>
-      <div class='name-grid' id='nameGrid'></div>
-    </div>
-
-    <!-- ANSWER -->
-    <div class='screen' id='screenAnswer'>
-      <div id='answerWeekChip' class='week-chip'></div>
-      <div class='question-box'>
-        <div class='question-text' id='answerQuestion'></div>
-      </div>
-      <p style='font-size:.8rem;color:var(--grey);text-align:center;margin-bottom:4px;'>
-        Your answer, <strong id='answerName' style='color:var(--white);'></strong>:
-      </p>
-      <input class='number-input' type='number' id='numberInput'
-             placeholder='0' inputmode='numeric'/>
-      <div class='btn-row'>
-        <button class='btn btn-green' id='submitBtn' onclick='submitAnswer()'>
-          &#10003; Submit my answer
-        </button>
-        <button class='btn btn-secondary' onclick='showScreen("screenIdentify");say(MSG_IDENTIFY);'>&#8592; Back</button>
-      </div>
-    </div>
-
-    <!-- WAITING -->
-    <div class='screen' id='screenWaiting'>
-      <div class='waiting-box'>
-        <h3>&#128274; Answer submitted!</h3>
-        <p>Waiting for everyone else&hellip;</p>
-        <div class='progress-wrap'><div class='progress-fill' id='waitProgress'></div></div>
-        <div class='wait-count' id='waitCount'>0 of 0 answered</div>
-      </div>
-      <div class='session-hint'>Session code: <span id='waitCode'></span></div>
-    </div>
-
-    <!-- RESULTS -->
-    <div class='screen' id='screenResults'>
-      <hr class='result-divider'/>
-      <div class='result-title'>&#127897; Talk order</div>
-      <div class='sort-toggle'>
-        <button class='sort-btn active' id='sortAsc'  onclick='setSort("asc")' >&#8593; Lowest first</button>
-        <button class='sort-btn'        id='sortDesc' onclick='setSort("desc")'>&#8595; Highest first</button>
-      </div>
-      <div class='question-box' style='margin-bottom:12px;'>
-        <div style='font-size:.72rem;color:var(--grey);margin-bottom:4px;'>This week&#39;s question was:</div>
-        <div class='question-text' id='resultsQuestion' style='font-size:.88rem;'></div>
-      </div>
-      <ol class='order-list' id='orderList'></ol>
-      <div class='btn-row' style='margin-top:12px;'>
-        <button class='btn btn-secondary' onclick='fullReset()'>&#8635; New session</button>
-      </div>
-    </div>
-
-  </div>
-  <footer>Made with &#10084; for ADC Consulting</footer>
-
-  <script>
-  /* ── REPLACE THESE WITH YOUR FIREBASE CREDENTIALS ── */
-  const FIREBASE_CONFIG = {
-apiKey: "AIzaSyAhAaxR3gWKKio7JgLxnaaSn8HGwCGW2UQ",
-  authDomain: "death-to-popcorn-style.firebaseapp.com",
-  databaseURL: "https://death-to-popcorn-style-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "death-to-popcorn-style",
-  storageBucket: "death-to-popcorn-style.firebasestorage.app",
-  messagingSenderId: "152860627010",
-  appId: "1:152860627010:web:05eb25bca2a04340741ddb",
-  measurementId: "G-Q6KPLCJTL6"
-  };
-  /* ─────────────────────────────────────────────────── */
-
-  var QUESTIONS = [
-   'What is your average daily screentime? (in minutes)',
-    'What was your CITO-score?',
-    'How many unread emails are in your inbox right now?',
-    'How many Slack groups are you in?',
-    'How many LinkedIn connections do you have?',
-    'How many times have you moved house?',
-    'At which hour did your morning alarm go off? (e.g. 7 for 7:00)',
-    'What are the last two digits of your phone number?',
-    'How many holidays have you got planned?',
-    'How many unread WhatsApp messages do you have right now?',
-    'How many steps did you walk yesterday?',
-    'How many browser tabs do you have open right now?',
-    'How many hours did you sleep last night?',
-    'How many countries have you visited in your life?',
-    'How many cups of coffee or tea have you had today?',
-    'What is your phone battery percentage right now?',
-    'How many apps are on your phone\u2019s home screen?',
-    'How many books have you read this year?',
-    'How many minutes does your commute take?',
-    'How many streaming subscriptions do you pay for? (Netflix, Spotify, etc.)',
-    'How many pairs of shoes do you own?',
-    'How many languages do you speak at any level?',
-    'How many group chats are you in across all apps?',
-    'At what age did you get your first smartphone?',
-    'How many alarms do you have set on your phone right now?',
-    'How many times have you changed jobs?',
-    'How many people do you follow on Instagram?',
-    'How many notifications are showing on your phone screen right now?',
-    'How many hours of video calls did you have last week?',
-    'How many different cities have you lived in?',
-    'How many cousins do you have?',
-    'How many years ago did you graduate?',
-    'How many podcasts are you currently subscribed to?',
-    'How many times did you eat out last week?',
-    'How many plants do you have at home?',
-    'On a scale of 1-10, how would you rate your mood today?',
-    'How many km is your commute one way?',
-    'How many concerts or festivals have you been to this year?',
-    'How many photos did you take last week?',
-    'How many different employers have you had in your career?',
-    'How many items are currently in your online shopping cart(s)?',
-    'On a scale of 1-10, how stressed are you right now?',
-    'How many times have you been abroad this year?',
-    'How many hours did you work last week?',
-    'How many years have you lived in your current city?',
-    'What percentage of your phone storage is used? (0-100)',
-    'How many people are in your immediate family (parents + siblings)?',
-    'How old will you be on your next birthday?',
-    'How many times have you hit snooze this week?',
-    'How many unread LinkedIn notifications do you have?',
-    'How many minutes did your longest meeting this week last?',
-    'How many people did you have lunch with last week?',
-  ];
-
-  var MEMBERS = ['Alinda','Elianne','Lisette','Harm','Jochem','Laurent','Timon'];
-
-  var MSG_HOME     = 'Hi there! Select who is here today, then create a session! &#127881;';
-  var MSG_PICK     = 'Elmo loves __N__! Keep picking! &#128400;';
-  var MSG_READY    = '__C__ friends! Create the session and share the code! &#127922;';
-  var MSG_SHARE    = 'Share that code or QR with everyone &mdash; in the room and online! &#128241;';
-  var MSG_JOIN     = 'Got a code? Type it in! &#128229;';
-  var MSG_IDENTIFY = 'Tap your name to see this week&#39;s question! &#128073;';
-  var MSG_ANSWER   = 'Enter your number and hit Submit! Elmo won&#39;t peek! &#129325;';
-  var MSG_WAIT     = 'Answer locked in! Waiting for everyone else... &#129300;';
-  var MSG_RESULTS  = 'All answers in! Here is the speaking order! &#127882;';
-  var MSG_RESET    = 'Starting fresh! &#127775;';
-
-  var selected       = {};
-  var sessionCode    = null;
-  var db             = null;
-  var myName         = null;
-  var sortDir        = 'asc';
-  var lastResultData = null;
-
-  function getWeekNumber(d) {
-    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-    var y = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-    return Math.ceil((((d - y) / 86400000) + 1) / 7);
-  }
-  function getThisWeekQuestion() {
-    var wk = getWeekNumber(new Date());
-    return { question: QUESTIONS[(wk - 1) % QUESTIONS.length], week: wk };
-  }
-
-  function init() {
-    var cfg = FIREBASE_CONFIG;
-    if (cfg.apiKey === 'YOUR_API_KEY' || cfg.databaseURL.indexOf('YOUR_PROJECT') !== -1) {
-      showScreen('screenHome');
-      say('&#9888; Please fill in your Firebase config in the code first!');
-      return;
-    }
-    firebase.initializeApp(cfg);
-    db = firebase.database();
-    var params = new URLSearchParams(window.location.search);
-    var code   = params.get('session');
-    if (code) {
-      sessionCode = code.toUpperCase();
-      loadSessionAsParticipant(sessionCode);
-    } else {
-      buildGrid(); updateHomeUI();
-      showScreen('screenHome'); say(MSG_HOME); bounceElmo();
-    }
-  }
-
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(function(s){ s.classList.remove('active'); });
-    document.getElementById(id).classList.add('active');
-  }
-
-  function buildGrid() {
-    var grid = document.getElementById('membersGrid');
-    grid.innerHTML = '';
-    MEMBERS.forEach(function(name) {
-      var btn = document.createElement('button');
-      btn.className = 'member-btn' + (selected[name] ? ' selected' : '');
-      btn.id = 'mbtn-' + name;
-      btn.onclick = (function(n){ return function(){ toggleMember(n); }; })(name);
-      var av = document.createElement('div'); av.className = 'avatar';
-      av.textContent = name.slice(0,2).toUpperCase();
-      var ns = document.createElement('span'); ns.textContent = name;
-      var cs = document.createElement('span'); cs.className = 'checkmark'; cs.textContent = '\u2713';
-      btn.appendChild(av); btn.appendChild(ns); btn.appendChild(cs);
-      grid.appendChild(btn);
-    });
-  }
-  function toggleMember(name) {
-    if (selected[name]) { delete selected[name]; }
-    else { selected[name] = true; say(MSG_PICK.replace('__N__', name)); bounceElmo(); }
-    updateHomeUI();
-  }
-  function selectAll() {
-    MEMBERS.forEach(function(m){ selected[m] = true; });
-    updateHomeUI(); say(MSG_READY.replace('__C__', MEMBERS.length)); bounceElmo();
-  }
-  function deselectAll() { selected = {}; updateHomeUI(); say(MSG_HOME); }
-  function updateHomeUI() {
-    var count = Object.keys(selected).length;
-    MEMBERS.forEach(function(n) {
-      var b = document.getElementById('mbtn-' + n);
-      if (b) b.className = 'member-btn' + (selected[n] ? ' selected' : '');
-    });
-    document.getElementById('counterLabel').textContent = count + ' selected';
-    document.getElementById('createBtn').disabled = (count < 2);
-    if (count >= 2) say(MSG_READY.replace('__C__', count));
-    else if (count === 0) say(MSG_HOME);
-  }
-
-  function makeCode() {
-    var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    var c = '';
-    for (var i = 0; i < 6; i++) c += chars[Math.floor(Math.random() * chars.length)];
-    return c;
-  }
-  function createSession() {
-    var attendees = Object.keys(selected);
-    if (attendees.length < 2) return;
-    sessionCode = makeCode();
-    var wq = getThisWeekQuestion();
-    var answers = {};
-    attendees.forEach(function(n){ answers[n] = { value: null, submittedAt: 0 }; });
-    db.ref('sessions/' + sessionCode).set({
-      attendees: attendees, totalVoters: attendees.length,
-      answersGiven: 0, question: wq.question, weekNumber: wq.week,
-      answers: answers, status: 'open', createdAt: Date.now()
-    }, function(err) {
-      if (err) { alert('Firebase error: ' + err.message); return; }
-      showShareScreen(wq);
-    });
-  }
-  function showShareScreen(wq) {
-    document.getElementById('displayCode').textContent   = sessionCode;
-    document.getElementById('shareWeekChip').textContent = 'Week ' + wq.week;
-    document.getElementById('shareQuestion').textContent = wq.question;
-    var url = window.location.origin + window.location.pathname + '?session=' + sessionCode;
-    document.getElementById('shareUrl').value = url;
-    document.getElementById('qrImg').src =
-      'https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=2BEBCB&bgcolor=2D2D2D&data='
-      + encodeURIComponent(url);
-    showScreen('screenShare'); say(MSG_SHARE); bounceElmo();
-  }
-  function copyLink() {
-    var inp = document.getElementById('shareUrl');
-    inp.select(); inp.setSelectionRange(0, 9999);
-    try { document.execCommand('copy'); } catch(e) {
-      navigator.clipboard && navigator.clipboard.writeText(inp.value); }
-    var btn = document.getElementById('copyBtn');
-    btn.textContent = 'Copied!';
-    setTimeout(function(){ btn.textContent = 'Copy link'; }, 2000);
-  }
-  function cancelSession() {
-    if (sessionCode) db.ref('sessions/' + sessionCode).remove();
-    sessionCode = null; selected = {};
-    buildGrid(); updateHomeUI(); showScreen('screenHome'); say(MSG_HOME);
-  }
-  function goToIdentify() { loadSessionAsParticipant(sessionCode); }
-
-  function joinByCode() {
-    var code = document.getElementById('codeInput').value.trim().toUpperCase();
-    if (code.length !== 6) { say('Please enter all 6 characters! &#128533;'); return; }
-    sessionCode = code; loadSessionAsParticipant(code);
-  }
-
-  function loadSessionAsParticipant(code) {
-    db.ref('sessions/' + code).once('value', function(snap) {
-      var data = snap.val();
-      if (!data) { say('Elmo cannot find that session! &#128533;'); showScreen('screenJoin'); return; }
-      if (data.status === 'closed') { renderResults(data); return; }
-      var storedName = localStorage.getItem('answered_' + code);
-      if (storedName) { myName = storedName; showWaiting(code, data.answersGiven, data.totalVoters); return; }
-      buildNameGrid(data, code);
-      showScreen('screenIdentify'); say(MSG_IDENTIFY); bounceElmo();
-    });
-  }
-
-  function buildNameGrid(data, code) {
-    var grid = document.getElementById('nameGrid');
-    grid.innerHTML = '';
-    data.attendees.forEach(function(name) {
-      var done = data.answers[name] && data.answers[name].submittedAt > 0;
-      var btn = document.createElement('button');
-      btn.className = 'name-btn' + (done ? ' answered' : '');
-      btn.disabled  = done;
-      btn.setAttribute('data-name', name);
-      btn.innerHTML = name + (done ? ' <span style="float:right">\u2713</span>' : '');
-      if (!done) btn.onclick = (function(n){ return function(){ chooseIdentity(n, data, code); }; })(name);
-      grid.appendChild(btn);
-    });
-    db.ref('sessions/' + code + '/answers').on('value', function(snap) {
-      var answers = snap.val() || {};
-      data.attendees.forEach(function(name) {
-        var b = grid.querySelector('[data-name="' + name + '"]');
-        if (!b) return;
-        if (answers[name] && answers[name].submittedAt > 0 && !b.classList.contains('answered')) {
-          b.className = 'name-btn answered'; b.disabled = true;
-          b.innerHTML = name + ' <span style="float:right">\u2713</span>';
-        }
-      });
-    });
-  }
-  function chooseIdentity(name, data, code) {
-    myName = name;
-    document.getElementById('answerWeekChip').textContent = 'Week ' + (data.weekNumber || getWeekNumber(new Date()));
-    document.getElementById('answerQuestion').textContent  = data.question;
-    document.getElementById('answerName').textContent      = name;
-    document.getElementById('numberInput').value           = '';
-    document.getElementById('submitBtn').disabled          = false;
-    showScreen('screenAnswer'); say(MSG_ANSWER); bounceElmo();
-  }
-
-  function submitAnswer() {
-    var raw = document.getElementById('numberInput').value.trim();
-    if (raw === '' || isNaN(Number(raw))) { say('Please enter a number first! &#128533;'); return; }
-    var val = Number(raw);
-    document.getElementById('submitBtn').disabled = true;
-    db.ref('sessions/' + sessionCode).transaction(function(current) {
-      if (!current) return current;
-      if (!current.answers) current.answers = {};
-      if (!current.answers[myName]) current.answers[myName] = {};
-      current.answers[myName].value       = val;
-      current.answers[myName].submittedAt = Date.now();
-      current.answersGiven = (current.answersGiven || 0) + 1;
-      if (current.answersGiven >= current.totalVoters) current.status = 'closed';
-      return current;
-    }, function(err, committed, snap) {
-      if (err) { alert('Submit error: ' + err.message); document.getElementById('submitBtn').disabled = false; return; }
-      localStorage.setItem('answered_' + sessionCode, myName);
-      var data = snap.val();
-      if (data.status === 'closed') { renderResults(data); }
-      else { showWaiting(sessionCode, data.answersGiven, data.totalVoters); }
-    });
-  }
-
-  function showWaiting(code, done, total) {
-    document.getElementById('waitCode').textContent = code;
-    updateWaitProgress(done, total);
-    showScreen('screenWaiting'); say(MSG_WAIT); bounceElmo();
-    var ref = db.ref('sessions/' + code);
-    var listener = ref.on('value', function(snap) {
-      var d = snap.val(); if (!d) return;
-      updateWaitProgress(d.answersGiven, d.totalVoters);
-      if (d.status === 'closed') { ref.off('value', listener); renderResults(d); }
-    });
-  }
-  function updateWaitProgress(done, total) {
-    var pct = total > 0 ? Math.round((done / total) * 100) : 0;
-    document.getElementById('waitProgress').style.width = pct + '%';
-    document.getElementById('waitCount').textContent = done + ' of ' + total + ' answered';
-  }
-
-  function renderResults(data) {
-    lastResultData = data;
-    document.getElementById('resultsQuestion').textContent = data.question || '';
-    renderSortedList(data, sortDir);
-    showScreen('screenResults'); say(MSG_RESULTS); celebrateElmo();
-    setTimeout(function(){ stopCelebrate(); }, 2500);
-  }
-  function setSort(dir) {
-    sortDir = dir;
-    document.getElementById('sortAsc').classList.toggle('active',  dir === 'asc');
-    document.getElementById('sortDesc').classList.toggle('active', dir === 'desc');
-    if (lastResultData) renderSortedList(lastResultData, dir);
-  }
-  function renderSortedList(data, dir) {
-    var answers  = data.answers;
-    var attendees = data.attendees;
-    var sorted = attendees.slice().sort(function(a, b) {
-      var va = (answers[a] && answers[a].value !== null) ? answers[a].value : (dir==='asc' ? Infinity : -Infinity);
-      var vb = (answers[b] && answers[b].value !== null) ? answers[b].value : (dir==='asc' ? Infinity : -Infinity);
-      if (va !== vb) return dir === 'asc' ? va - vb : vb - va;
-      return (answers[a] ? answers[a].submittedAt : 0) - (answers[b] ? answers[b].submittedAt : 0);
-    });
-    var list = document.getElementById('orderList');
-    list.innerHTML = '';
-    sorted.forEach(function(name, i) {
-      var val     = (answers[name] && answers[name].value !== null) ? answers[name].value : '?';
-      var prevVal = i > 0 && answers[sorted[i-1]] && answers[sorted[i-1]].value !== null ? answers[sorted[i-1]].value : null;
-      var isTie   = i > 0 && val !== '?' && prevVal !== null && val === prevVal;
-      var li = document.createElement('li');
-      li.className = 'order-item'; li.style.animationDelay = (i * 0.07) + 's';
-      var nd = document.createElement('div'); nd.className = 'order-num'; nd.textContent = '' + (i + 1);
-      var ns = document.createElement('span'); ns.className = 'order-name'; ns.textContent = name;
-      var ab = document.createElement('span'); ab.className = 'answer-badge'; ab.textContent = '' + val;
-      li.appendChild(nd); li.appendChild(ns); li.appendChild(ab);
-      if (isTie) { var tb = document.createElement('span'); tb.className = 'tie-badge'; tb.textContent = '(tie \u23f1)'; li.appendChild(tb); }
-      list.appendChild(li);
-    });
-  }
-
-  function fullReset() {
-    sessionCode = null; selected = {}; myName = null; sortDir = 'asc'; lastResultData = null;
-    window.history.replaceState({}, '', window.location.pathname);
-    buildGrid(); updateHomeUI(); showScreen('screenHome'); say(MSG_RESET); bounceElmo();
-  }
-
-  function say(msg) {
-    var b = document.getElementById('speechBubble'); b.style.opacity = '0';
-    setTimeout(function(){ b.innerHTML = msg; b.style.opacity = '1'; }, 140);
-  }
-  function bounceElmo() {
-    var el = document.getElementById('elmoImg');
-    el.classList.remove('bounce','celebrate'); void el.offsetWidth; el.classList.add('bounce');
-    el.addEventListener('animationend', function(){ el.classList.remove('bounce'); }, { once: true });
-  }
-  function celebrateElmo() { var el = document.getElementById('elmoImg'); el.classList.remove('bounce'); el.classList.add('celebrate'); }
-  function stopCelebrate() { document.getElementById('elmoImg').classList.remove('celebrate'); }
-
-  window.addEventListener('load', init);
-  </script>
+    <script src="app.js"></script>
 </body>
 </html>
