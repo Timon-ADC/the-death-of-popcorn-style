@@ -16,11 +16,15 @@
         <main id="app">
             <!-- Elmo guide -->
             <div class="elmo-guide">
-                <img
-                    id="elmo-img"
-                    src="elmo.gif"
-                    alt="Elmo komt door de deur"
-                />
+                <div class="elmo-frame">
+                    <img
+                        id="elmo-img"
+                        src="elmo.gif"
+                        alt="Elmo komt door de deur"
+                        onerror="this.style.display='none'; document.getElementById('elmo-fallback').style.display='flex';"
+                    />
+                    <div id="elmo-fallback" class="elmo-fallback">Elmo 🚪</div>
+                </div>
                 <div class="speech-bubble">
                     <p id="elmo-text">Hoi hoi! Elmo is er klaar voor. Jullie ook, hopelijk.</p>
                 </div>
