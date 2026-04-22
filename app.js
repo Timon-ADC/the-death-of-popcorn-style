@@ -134,13 +134,11 @@ function showStep(id) {
 }
 
 function pickQuestion() {
-    // Tries to avoid repeating the same question twice in one session
     let available = QUESTIONS.filter(q => !state.usedQuestionsThisSession.includes(q));
     if (available.length === 0) {
         state.usedQuestionsThisSession = [];
         available = QUESTIONS;
     }
-    // Also store in localStorage so weekly use avoids recently-used questions
     let recent = [];
     try {
         recent = JSON.parse(localStorage.getItem('recentQuestions') || '[]');
@@ -149,7 +147,6 @@ function pickQuestion() {
     const pool = fresh.length > 0 ? fresh : available;
     const q = pickRandom(pool);
     state.usedQuestionsThisSession.push(q);
-    // Keep last 10 in localStorage
     recent.unshift(q);
     recent = recent.slice(0, 10);
     localStorage.setItem('recentQuestions', JSON.stringify(recent));
@@ -221,7 +218,7 @@ function calculateOrder() {
         return {
             name,
             value: val === '' ? null : Number(val),
-            random: Math.random() // tiebreaker
+            random: Math.random()
         };
     });
 
@@ -231,13 +228,11 @@ function calculateOrder() {
         return;
     }
 
-    // Sort ascending by value, use random as tiebreaker
     entries.sort((a, b) => {
         if (a.value !== b.value) return a.value - b.value;
         return a.random - b.random;
     });
 
-    // Detect ties
     const hasTies = entries.some((e, i) =>
         i > 0 && e.value === entries[i - 1].value
     );
@@ -303,6 +298,5 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('to-question').disabled = true;
     });
 
-    // Update Elmo when showing participants step initially
     setTimeout(() => setElmo('askParticipants'), 2500);
 });
