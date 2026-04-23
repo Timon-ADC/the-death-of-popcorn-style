@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Check-in Roulette · Public & Society</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&family=JetBrains+Mono:wght@400;600&family=Inter+Tight:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Grain overlay -->
+  <div class="grain"></div>
+
+  <!-- Decorative background blobs -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <header class="top-bar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <span class="brand-name">Check-in Roulette</span>
+    </div>
+    <div class="team-tag">Public &amp; Society</div>
+  </header>
+
+  <main class="stage" id="stage">
+
+    <!-- ========== SCREEN 1: INTRO ========== -->
+    <section class="screen active" id="screen-intro">
+      <div class="intro-grid">
+        <div class="intro-text">
+          <div class="eyebrow">Wekelijkse check-in · v1.0</div>
+          <h1 class="headline">
+            Wie mag <em>eerst</em>?<br>
+            <span class="headline-accent">Laat Elmo beslissen.</span>
+          </h1>
+          <p class="lede">
+            Een eerlijke, willekeurige, en vooral onnodig ingewikkelde manier om de volgorde
+            van sprekers te bepalen. Met ondersteuning van een rode, pluizige coach.
+          </p>
+          <button class="btn btn-primary" onclick="goTo('screen-participants')">
+            <span>Start de roulette</span>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <div class="elmo-wrap">
+          <div class="elmo-speech-bubble" id="elmoBubble">
+            <div class="elmo-speech-text" id="elmoText">
+              Hoi! Elmo is er weer. Elmo gaat vandaag beslissen wie mag praten.
+              Dat is vast heel spannend.
+            </div>
+          </div>
+          <img class="elmo" src="elmo.jpg" alt="Elmo" />
+          <div class="elmo-ground"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN 2: PARTICIPANTS ========== -->
+    <section class="screen" id="screen-participants">
+      <div class="screen-header">
+        <div class="step-indicator">
+          <span class="step active">1</span>
+          <span class="step-line"></span>
+          <span class="step">2</span>
+          <span class="step-line"></span>
+          <span class="step">3</span>
+        </div>
+        <h2 class="screen-title">Wie is er vandaag?</h2>
+        <p class="screen-sub">Tik op iedereen die meedoet aan de check-in.</p>
+      </div>
+
+      <div class="participants-grid" id="participantsGrid"></div>
+
+      <div class="action-row">
+        <button class="btn btn-ghost" onclick="goTo('screen-intro')">← Terug</button>
+        <div class="selection-count" id="selectionCount">0 geselecteerd</div>
+        <button class="btn btn-primary" id="toQuestionBtn" onclick="goToQuestion()" disabled>
+          <span>Volgende</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <!-- Floating Elmo -->
+      <div class="elmo-floating" onclick="toggleElmoBubble('p')">
+        <img src="elmo.jpg" alt="Elmo" />
+        <div class="elmo-floating-bubble" id="elmoFloatingBubbleP">
+          Wauw, selecteren. Heel geavanceerd. Elmo is onder de indruk.
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN 3: QUESTION ========== -->
+    <section class="screen" id="screen-question">
+      <div class="screen-header">
+        <div class="step-indicator">
+          <span class="step done">1</span>
+          <span class="step-line done"></span>
+          <span class="step active">2</span>
+          <span class="step-line"></span>
+          <span class="step">3</span>
+        </div>
+        <h2 class="screen-title">De vraag van deze week</h2>
+        <p class="screen-sub">Iedereen geeft een getal. Antwoord eerlijk. Of niet. Elmo ziet het toch niet.</p>
+      </div>
+
+      <div class="question-card">
+        <div class="question-label">VRAAG VAN DE WEEK</div>
+        <div class="question-text" id="questionText">Laden...</div>
+        <button class="btn-shuffle" onclick="shuffleQuestion()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 3h5v5M4 20l17-17M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>
+          Andere vraag
+        </button>
+      </div>
+
+      <div class="answers-list" id="answersList"></div>
+
+      <div class="action-row">
+        <button class="btn btn-ghost" onclick="goTo('screen-participants')">← Terug</button>
+        <button class="btn btn-primary" id="revealBtn" onclick="reveal()" disabled>
+          <span>Onthul de volgorde</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <div class="elmo-floating" onclick="toggleElmoBubble('q')">
+        <img src="elmo.jpg" alt="Elmo" />
+        <div class="elmo-floating-bubble" id="elmoFloatingBubbleQ">
+          Getallen. Leuk. Elmo kan tellen tot tien. Soms.
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== SCREEN 4: REVEAL ========== -->
+    <section class="screen" id="screen-reveal">
+      <div class="screen-header">
+        <div class="step-indicator">
+          <span class="step done">1</span>
+          <span class="step-line done"></span>
+          <span class="step done">2</span>
+          <span class="step-line done"></span>
+          <span class="step active">3</span>
+        </div>
+        <h2 class="screen-title">De volgorde van vandaag</h2>
+        <p class="screen-sub" id="revealSub">Tromgeroffel... gesorteerd op laagste naar hoogste waarde.</p>
+      </div>
+
+      <div class="reveal-question" id="revealQuestion"></div>
+
+      <ol class="ranking" id="ranking"></ol>
+
+      <div class="action-row center">
+        <button class="btn btn-ghost" onclick="restart()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"/></svg>
+          Nog een keer
+        </button>
+        <button class="btn btn-primary" onclick="newQuestion()">
+          <span>Nieuwe vraag, zelfde team</span>
+        </button>
+      </div>
+
+      <div class="elmo-floating" onclick="toggleElmoBubble('r')">
+        <img src="elmo.jpg" alt="Elmo" />
+        <div class="elmo-floating-bubble" id="elmoFloatingBubbleR">
+          Klaar. Elmo gaat nu even liggen.
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="foot">
+    <span>Gemaakt voor Public &amp; Society · Powered by willekeur &amp; Elmo</span>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
