@@ -3,74 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Check-in Volgorde - Public & Society</title>
+    <title>Check-in Volgorde — Public & Society</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Public &amp; Society Check-in</h1>
-            <p class="subtitle">Wie mag er als eerste?</p>
-        </header>
-
-        <main id="app">
-            <!-- Elmo guide -->
-            <div class="elmo-guide">
-                <div class="elmo-frame">
-                    <img
-                        id="elmo-img"
-                        src="elmo.gif"
-                        alt="Elmo komt door de deur"
-                        onerror="this.style.display='none'; document.getElementById('elmo-fallback').style.display='flex';"
-                    />
-                    <div id="elmo-fallback" class="elmo-fallback">Elmo 🚪</div>
-                </div>
-                <div class="speech-bubble">
-                    <p id="elmo-text">Hoi hoi! Elmo is er klaar voor. Jullie ook, hopelijk.</p>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-mark"></div>
+                <div>
+                    <h1>Check-in Volgorde</h1>
+                    <p class="subtitle">Public &amp; Society — wekelijkse meeting</p>
                 </div>
             </div>
+            <div class="progress-bar">
+                <div class="progress-step active" data-step="1"><span>1</span><label>Welkom</label></div>
+                <div class="progress-step" data-step="2"><span>2</span><label>Deelnemers</label></div>
+                <div class="progress-step" data-step="3"><span>3</span><label>Vraag</label></div>
+                <div class="progress-step" data-step="4"><span>4</span><label>Volgorde</label></div>
+            </div>
+        </header>
 
-            <!-- Step 1: Select participants -->
-            <section id="step-participants" class="step active">
-                <h2>Stap 1 — Wie is er vandaag?</h2>
-                <p class="hint">Vink aan wie er bij de meeting zit.</p>
-                <div id="participants-list" class="participants-list"></div>
-                <button id="to-question" class="btn btn-primary" disabled>Volgende</button>
-            </section>
-
-            <!-- Step 2: Show question -->
-            <section id="step-question" class="step">
-                <h2>Stap 2 — De vraag van deze week</h2>
-                <div class="question-card">
-                    <p id="question-text">...</p>
+        <main class="main-content">
+            <!-- Elmo gids -->
+            <aside class="elmo-guide">
+                <div class="elmo-avatar">
+                    <img src="https://media.tenor.com/vje7Bbd41DMAAAAe/elmo-door.png" alt="Elmo" />
                 </div>
-                <div class="button-row">
-                    <button id="new-question" class="btn btn-secondary">Andere vraag</button>
-                    <button id="to-answers" class="btn btn-primary">Start invullen</button>
+                <div class="speech-bubble">
+                    <p id="elmo-message">Hallo hallo! Elmo is er weer. Klaar om te bepalen wie als eerste mag klagen over de maandag?</p>
                 </div>
-            </section>
+            </aside>
 
-            <!-- Step 3: Collect answers -->
-            <section id="step-answers" class="step">
-                <h2>Stap 3 — Antwoorden</h2>
-                <p class="hint" id="answer-question-label">...</p>
-                <div id="answers-list" class="answers-list"></div>
-                <button id="calculate" class="btn btn-primary">Bepaal de volgorde</button>
-            </section>
+            <section class="stage-wrapper">
+                <!-- Stap 1: Welkom -->
+                <div class="stage active" id="stage-1">
+                    <div class="card">
+                        <span class="eyebrow">Stap 1</span>
+                        <h2>Welkom bij de check-in volgorde-generator</h2>
+                        <p class="lead">Deze app bepaalt eerlijk (nou ja, willekeurig genoeg) in welke volgorde iedereen mag inchecken tijdens de wekelijkse meeting.</p>
+                        <div class="info-grid">
+                            <div class="info-tile">
+                                <div class="info-number">1</div>
+                                <div class="info-text"><strong>Kies deelnemers</strong><br>Niet iedereen is er altijd.</div>
+                            </div>
+                            <div class="info-tile">
+                                <div class="info-number">2</div>
+                                <div class="info-text"><strong>Beantwoord de vraag</strong><br>Elke week een nieuwe.</div>
+                            </div>
+                            <div class="info-tile">
+                                <div class="info-number">3</div>
+                                <div class="info-text"><strong>Bekijk de volgorde</strong><br>Gesorteerd op getal.</div>
+                            </div>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-primary" data-action="next">Beginnen</button>
+                        </div>
+                    </div>
+                </div>
 
-            <!-- Step 4: Show result -->
-            <section id="step-result" class="step">
-                <h2>Stap 4 — De volgorde</h2>
-                <ol id="result-list" class="result-list"></ol>
-                <button id="restart" class="btn btn-secondary">Opnieuw beginnen</button>
+                <!-- Stap 2: Deelnemers -->
+                <div class="stage" id="stage-2">
+                    <div class="card">
+                        <span class="eyebrow">Stap 2</span>
+                        <h2>Wie is er vandaag bij?</h2>
+                        <p class="lead">Vink aan wie er aanwezig is. Afwezigen krijgen een koekje bij terugkomst.</p>
+                        <div class="participants-grid" id="participants-grid"></div>
+                        <div class="selection-summary">
+                            <span id="selection-count">0</span> deelnemers geselecteerd
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-secondary" data-action="back">Terug</button>
+                            <button class="btn btn-primary" data-action="next" id="to-question-btn" disabled>Verder naar de vraag</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stap 3: Vraag -->
+                <div class="stage" id="stage-3">
+                    <div class="card">
+                        <span class="eyebrow">Stap 3 — Vraag van deze week</span>
+                        <h2 id="weekly-question">Laden...</h2>
+                        <p class="lead">Iedereen vult een getal in. Ga eerlijk te werk, Elmo kijkt mee.</p>
+                        <div class="answers-list" id="answers-list"></div>
+                        <div class="question-controls">
+                            <button class="btn btn-ghost" id="new-question-btn">Andere vraag kiezen</button>
+                            <label class="sort-toggle">
+                                <span>Sorteren:</span>
+                                <select id="sort-direction">
+                                    <option value="asc">Laagste eerst</option>
+                                    <option value="desc">Hoogste eerst</option>
+                                </select>
+                            </label>
+                        </div>
+                        <div class="actions">
+                            <button class="btn btn-secondary" data-action="back">Terug</button>
+                            <button class="btn btn-primary" data-action="next" id="generate-order-btn" disabled>Bepaal de volgorde</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stap 4: Volgorde -->
+                <div class="stage" id="stage-4">
+                    <div class="card">
+                        <span class="eyebrow">Stap 4 — De volgorde is bepaald</span>
+                        <h2>En de winnaar van &quot;mag als eerste&quot; is...</h2>
+                        <div class="order-display" id="order-display"></div>
+                        <div class="actions">
+                            <button class="btn btn-secondary" data-action="restart">Opnieuw beginnen</button>
+                            <button class="btn btn-primary" id="copy-order-btn">Kopieer volgorde</button>
+                        </div>
+                    </div>
+                </div>
             </section>
         </main>
 
-        <footer>
+        <footer class="app-footer">
             <p>Gemaakt voor het Public &amp; Society team</p>
         </footer>
     </div>
 
-    <script src="app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
